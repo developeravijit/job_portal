@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Job Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <div class="bg-white rounded-lg shadow p-8">
+
+        <h1 class="text-3xl font-bold mb-6 capitalize">
+          <%= job.title %>
+        </h1>
+
+        <div class="space-y-4">
+
+          <p class="uppercase">
+            <strong class="capitalize">Skills:</strong>
+            <%= job.skills %>
+          </p>
+
+
+          <p>
+            <strong>Salary:</strong>
+            ₹<%= job.salary %>
+          </p>
+
+          <p class="capitalize">
+            <strong>Location:</strong>
+            <%= job.location %>
+          </p>
+
+
+          <div>
+            <h3 class="text-xl font-semibold mb-2">
+              Job Description
+            </h3>
+
+            <p class="leading-8 text-gray-700 capitalize">
+              <%= job.description %>
+            </p>
+          </div>
+
+        </div>
+
+        <div class="mt-8">
+          <a href="/employeer/jobs" class="bg-gray-600 text-white px-5 py-2 rounded">
+            Back
+          </a>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

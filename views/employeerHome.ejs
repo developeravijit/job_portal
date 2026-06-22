@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Employer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <h2 class="text-3xl font-bold mb-8">
+        Welcome <%= user.name %>
+      </h2>
+
+      <div class="grid grid-cols-3 gap-5">
+
+
+        <div class="bg-white p-6 rounded shadow">
+          <h3>Total Jobs</h3>
+          <p class="text-3xl font-bold">
+            <%= totalJobs %>
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded shadow">
+          <h3>Total Applicants</h3>
+          <p class="text-3xl font-bold">
+            <%= totalApplicants %>
+          </p>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Company</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">
+            My Company
+          </h1>
+          <p class="text-gray-500 mt-2">
+            Manage your company profile
+          </p>
+        </div>
+
+        <% if(company.length === 0) { %>
+        <a href="/employeer/create/company" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+          Create Company
+        </a>
+        <% } %>
+      </div>
+
+      <!-- Error Message -->
+      <% if(error) { %>
+      <div class="bg-red-100 capitalize text-center border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <%= error %>
+      </div>
+      <% } %>
+
+      <!-- Company Card -->
+      <% company.forEach(company => { %>
+
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+
+        <!-- Banner -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-700 p-10">
+
+          <h2 class="text-4xl font-bold text-white">
+            <%= company.companyName %>
+          </h2>
+
+          <p class="text-blue-100 mt-2">
+            <%= company.industry %>
+          </p>
+
+        </div>
+
+        <div class="p-8">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Website -->
+            <div>
+              <h3 class="text-gray-500 text-sm uppercase">
+                Company Website
+              </h3>
+
+              <a href="<%= company.website %>" target="_blank" class="text-blue-600 hover:underline text-lg">
+
+                <%= company.website %>
+
+              </a>
+            </div>
+
+            <!-- Industry -->
+            <div>
+              <h3 class="text-gray-500 text-sm uppercase">
+                Industry
+              </h3>
+
+              <p class="text-lg font-medium text-gray-800">
+                <%= company.industry %>
+              </p>
+            </div>
+
+            <!-- Created Date -->
+            <div>
+              <h3 class="text-gray-500 text-sm uppercase">
+                Created On
+              </h3>
+
+              <p class="text-lg text-gray-800">
+                <%= new Date(company.createdAt).toDateString() %>
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-10 flex justify-end gap-4">
+
+            <a href="/employeer/edit/company/<%= company._id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg">
+
+              Edit Company
+
+            </a>
+
+
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <% }) %>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

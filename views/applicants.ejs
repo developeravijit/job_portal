@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Applicants</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-3xl font-bold">
+            Applicants
+          </h1>
+
+          <p class="text-gray-500 mt-1">
+            Manage candidate applications
+          </p>
+        </div>
+      </div>
+
+      <% if(hasApplicants){ %>
+
+      <div class="grid gap-6">
+
+        <% applications.forEach(application => { %>
+
+        <div class="bg-white rounded-xl shadow p-6">
+
+          <div class="flex justify-between items-start">
+
+            <div>
+
+              <h2 class="text-xl font-bold text-gray-800">
+                <%= application.candidateName %>
+              </h2>
+
+              <p class="text-gray-600 mt-2">
+                <%= application.candidateEmail %>
+              </p>
+
+              <p class="text-gray-600">
+                <%= application.candidatePhone %>
+              </p>
+
+              <p class="mt-4 text-sm text-gray-500">
+                Applied For:
+                <span class="font-semibold text-gray-700">
+                  <%= application.jobTitle %>
+                </span>
+              </p>
+
+              <p class="mt-2 text-sm text-gray-500">
+                Applied On:
+                <%= new Date(application.createdAt).toLocaleDateString() %>
+              </p>
+
+            </div>
+
+            <div>
+
+              <% if(application.status === "submitted"){ %>
+
+              <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                Submitted
+              </span>
+
+              <% } %>
+
+              <% if(application.status === "reviewing"){ %>
+
+              <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                Reviewing
+              </span>
+
+              <% } %>
+
+              <% if(application.status === "selected"){ %>
+
+              <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                Selected
+              </span>
+
+              <% } %>
+
+              <% if(application.status === "rejected"){ %>
+
+              <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+                Rejected
+              </span>
+
+              <% } %>
+
+            </div>
+
+          </div>
+
+          <div class="border-t mt-6 pt-5">
+
+            <div class="flex flex-wrap gap-3">
+
+              <% if(application.resume){ %>
+
+              <a href="<%= application.resume %>" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">
+                View Resume
+              </a>
+
+              <a href="<%= application.resume %>" target="_blank" download class="bg-gray-700 text-white px-4 py-2 rounded-lg">
+                Download Resume
+              </a>
+
+
+
+              <% } %>
+
+              <% if(application.status === "submitted"){ %>
+
+              <form action="/employeer/application/status/<%= application._id %>" method="POST">
+
+                <input type="hidden" name="status" value="reviewing">
+
+                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">
+                  Review
+                </button>
+
+              </form>
+
+              <% } else if(application.status === "reviewing"){ %>
+
+              <form action="/employeer/application/status/<%= application._id %>" method="POST">
+
+                <input type="hidden" name="status" value="selected">
+
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg">
+                  Select
+                </button>
+
+              </form>
+
+              <form action="/employeer/application/status/<%= application._id %>" method="POST">
+
+                <input type="hidden" name="status" value="rejected">
+
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg">
+                  Reject
+                </button>
+
+              </form>
+
+              <% } %>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <% }) %>
+
+      </div>
+
+      <% } else { %>
+
+      <div class="bg-white rounded-xl shadow p-10 text-center">
+
+        <h2 class="text-2xl font-bold text-gray-700">
+          No Candidates Applied Yet
+        </h2>
+
+        <p class="text-gray-500 mt-3">
+          Applications will appear here when candidates apply.
+        </p>
+
+      </div>
+
+      <% } %>
+
+      <% if(pageCount > 1){ %>
+
+      <div class="flex justify-center mt-8 gap-2">
+
+        <% for(let i = 1; i <= pageCount; i++){ %>
+
+        <% if(i === currentPage){ %>
+
+        <span class="px-4 py-2 bg-blue-600 text-white rounded">
+          <%= i %>
+        </span>
+
+        <% } else { %>
+
+        <a href="/employeer/applicants?page=<%= i %>" class="px-4 py-2 bg-white border rounded hover:bg-gray-100">
+          <%= i %>
+        </a>
+
+        <% } %>
+
+        <% } %>
+
+      </div>
+
+      <% } %>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

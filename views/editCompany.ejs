@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Company</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">
+          Edit Company
+        </h1>
+
+        <p class="text-gray-500 mt-2">
+          Update your company information
+        </p>
+      </div>
+
+      <% if (error) { %>
+      <div class="mb-6 bg-red-100 text-red-700 px-4 py-3 rounded-lg">
+        <%= error %>
+      </div>
+      <% } %>
+
+      <% if (success) { %>
+      <div class="mb-6 bg-green-100 text-green-700 px-4 py-3 rounded-lg">
+        <%= success %>
+      </div>
+      <% } %>
+
+      <div class="bg-white rounded-2xl shadow-lg p-8 max-w-4xl">
+
+        <form action="/employeer/edit/company/<%= company._id %>" method="POST">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Company Name -->
+            <div>
+              <label class="block mb-2 font-medium text-gray-700">
+                Company Name
+              </label>
+
+              <input type="text" name="companyName" value="<%= company.companyName %>" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+            </div>
+
+            <!-- Industry -->
+            <div>
+              <label class="block mb-2 font-medium text-gray-700">
+                Industry
+              </label>
+
+              <input type="text" name="industry" value="<%= company.industry %>" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+            </div>
+
+            <!-- Website -->
+            <div class="md:col-span-2">
+              <label class="block mb-2 font-medium text-gray-700">
+                Website
+              </label>
+
+              <input type="url" name="website" value="<%= company.website %>" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+            </div>
+
+          </div>
+
+          <div class="mt-8 flex gap-4">
+
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg">
+
+              Update Company
+
+            </button>
+
+            <a href="/employeer/myCompany" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg">
+
+              Cancel
+
+            </a>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

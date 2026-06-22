@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>500 - Internal Server Error</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+
+  <div class="max-w-lg w-full bg-white shadow-lg rounded-xl p-8 text-center">
+
+    <div class="mb-6">
+      <h1 class="text-7xl font-bold text-red-500">500</h1>
+      <h2 class="text-2xl font-semibold text-gray-800 mt-2">
+        Internal Server Error
+      </h2>
+    </div>
+
+    <p class="text-gray-600 mb-6">
+      Something went wrong on our end. Please try again later.
+    </p>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-100 border border-red-300 text-red-700 rounded-lg p-3 mb-6">
+      <%= error %>
+    </div>
+    <% } %>
+
+    <a href="/dashboard/login" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+      Back to Home
+    </a>
+
+  </div>
+
+</body>
+
+</html>

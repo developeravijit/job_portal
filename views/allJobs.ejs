@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>All Jobs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <h1 class="text-3xl font-bold mb-8">
+        My Jobs
+      </h1>
+
+      <% if (jobs && jobs.length > 0) { %>
+
+      <div class="grid grid-cols-2 gap-5">
+
+        <% jobs.forEach(job => { %>
+
+        <div class="bg-white p-6 rounded shadow">
+
+          <h2 class="text-xl font-bold capitalize">
+            <%= job.title %>
+          </h2>
+
+          <p class="my-3 text-gray-600 capitalize">
+            <%= job.description.length > 120
+      ? job.description.substring(0, 120) + "..."
+      : job.description
+  %>
+          </p>
+
+          <p class="uppercase">
+            <strong class="capitalize">Skills:</strong>
+            <%= job.skills %>
+          </p>
+
+          <p>
+            <strong>Salary:</strong>
+            ₹<%= job.salary %>
+          </p>
+
+          <p class="capitalize">
+            <strong>Location:</strong>
+            <%= job.location %>
+          </p>
+
+          <div class="mt-4 flex gap-2">
+            <a href="/employeer/job/<%= job._id %>" class="bg-blue-600 text-white px-4 py-2 rounded">
+              View
+            </a>
+
+            <a href="/employeer/job/edit/<%= job._id %>" class="bg-yellow-500 text-white px-4 py-2 rounded">
+              Edit
+            </a>
+          </div>
+
+        </div>
+
+        <% }) %>
+
+      </div>
+
+      <% if (pageCount > 1) { %>
+      <nav class="mt-8 flex items-center justify-center gap-2">
+        <% if (pages && pages.length) { %>
+        <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %>" class="px-4 py-2 bg-white border rounded hover:bg-gray-50">Previous</a>
+        <% } %>
+
+        <% pages.forEach(page => { %>
+        <a href="?page=<%= page.number %>&limit=<%= limit %>" class="px-4 py-2 border rounded <%= page.number === Number(currentPage) ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-50' %>"><%= page.number %></a>
+        <% }) %>
+
+        <% if (currentPage < pageCount) { %>
+        <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %>" class="px-4 py-2 bg-white border rounded hover:bg-gray-50">Next</a>
+        <% } %>
+        <% } %>
+      </nav>
+      <% } %>
+
+      <% } else { %>
+
+      <div class="bg-white p-10 rounded shadow text-center">
+
+        <h2 class="text-2xl font-bold text-gray-600">
+          No Jobs Created Yet
+        </h2>
+
+        <p class="mt-3 text-gray-500">
+          Create your first job posting.
+        </p>
+
+        <a href="/employeer/create/job" class="inline-block mt-4 bg-blue-600 text-white px-5 py-2 rounded">
+          Create Job
+        </a>
+
+      </div>
+
+      <% } %>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>
