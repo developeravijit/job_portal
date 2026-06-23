@@ -11,6 +11,7 @@ const router = express.Router();
 
 const cloudinary = require("../config/cloudinary");
 const dashboardController = require("../controller/dashboardController/dashboardController");
+const authCheck = require("../middleware/dashboardMiddleware/dashboardAuthCheck");
 
 // Landing Page
 router.get("/", dashboardController.landingPage);

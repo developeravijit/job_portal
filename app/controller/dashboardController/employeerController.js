@@ -7,9 +7,15 @@ const paginate = require("express-paginate");
 const {
   companySchema,
   jobSchema,
+  notificationSchema,
 } = require("../../validation/companyValidation");
 const { default: mongoose } = require("mongoose");
-const { selectedEmail, rejectedEmail } = require("../../utils/sendEmail");
+const {
+  selectedEmail,
+  rejectedEmail,
+  notificationEmail,
+} = require("../../utils/sendEmail");
+const Notification = require("../../model/notification");
 
 class employeerController {
   // Create Company Page
@@ -58,11 +64,14 @@ class employeerController {
       req.query.page = page;
 
       const [jobs, itemCount] = await Promise.all([
-        Job.find({ employeerID: req.user.id })
+        Job.find({ employeerID: req.user.id, status: true })
           .limit(limit)
           .skip(req.skip)
           .lean(),
-        Job.countDocuments({ employeerID: req.user.id }),
+        Job.countDocuments({
+          employeerID: req.user.id,
+          status: true,
+        }),
       ]);
 
       const pageCount = Math.max(1, Math.ceil(itemCount / limit));
@@ -90,6 +99,12 @@ class employeerController {
       const { id } = req.params;
 
       const job = await Job.findById(id);
+
+      if (!job) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "Job not found",
+        });
+      }
 
       return res.render("jobDetails", {
         job,
@@ -144,6 +159,8 @@ class employeerController {
           {
             $project: {
               _id: 1,
+              applicationID: "$_id",
+              candidateID: "$candidate._id",
               status: 1,
               createdAt: 1,
               resume: 1,
@@ -200,6 +217,7 @@ class employeerController {
         hasApplicants: applications.length > 0,
         currentPage: page,
         pageCount,
+        req,
       });
     } catch (error) {
       console.log(error.message);
@@ -238,6 +256,56 @@ class employeerController {
         error: null,
         success: null,
       });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Deleted Job Page
+  async deletedJobsPage(req, res) {
+    try {
+      const jobs = await Job.find({
+        employeerID: req.user.id,
+        status: false,
+      }).lean();
+
+      return res.render("deletedJobs", {
+        jobs,
+      });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Restore Job
+  async restoreJob(req, res) {
+    try {
+      const { id } = req.params;
+
+      const job = await Job.findOne({
+        _id: id,
+        status: false,
+      });
+
+      if (!job) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "Job not found to restore",
+        });
+      }
+
+      const restoreJob = await Job.findByIdAndUpdate(
+        id,
+        { status: true },
+        { new: true, runValidators: true },
+      );
+
+      return res.redirect("/employeer/deleted/jobs");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -460,11 +528,42 @@ class employeerController {
     }
   }
 
+  // Delete Job
+  async deleteJob(req, res) {
+    try {
+      const { id } = req.params;
+      const job = await Job.findOne({
+        _id: id,
+        status: true,
+      });
+
+      if (!job) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "Job not found to delete",
+        });
+      }
+
+      const deleteJob = await Job.findByIdAndUpdate(
+        id,
+        { status: false },
+        { new: true, runValidators: true },
+      );
+
+      return res.redirect("/employeer/jobs");
+    } catch (error) {
+      console.log(error.message);
+
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
   // Change Applicant Status
   async changeStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status, redirectTo } = req.body;
 
       await Application.findByIdAndUpdate(id, { status }, { new: true });
 
@@ -531,7 +630,87 @@ class employeerController {
         await rejectedEmail(emailData);
       }
 
-      return res.redirect("/employeer/applicants");
+      return res.redirect(redirectTo || "/employeer/applicants");
+    } catch (error) {
+      console.log(error.message);
+
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Notification Page
+  async notificationPage(req, res) {
+    try {
+      const user = await User.findById(req.params.id);
+
+      if (!user) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "User not found to send notification",
+        });
+      }
+
+      return res.render("notification", {
+        user,
+      });
+    } catch (error) {
+      console.log(error.message);
+
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Send Notification
+  async sendNotification(req, res) {
+    try {
+      const { error, value } = notificationSchema.validate(req.body, {
+        abortEarly: false,
+      });
+
+      if (error) {
+        const messages = error.details.map((item) => item.message);
+
+        return res.status(httpCodes.bad_request).render("500", {
+          error: error.details[0].message,
+        });
+      }
+
+      const user = await User.findById(req.params.id);
+
+      const { subject, message } = value;
+
+      const company = await Company.findOne({
+        employeerID: req.user.id,
+      });
+
+      if (!user || !company) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "No data found",
+        });
+      }
+
+      const data = new Notification({
+        userID: user._id,
+        companyID: company._id,
+        subject,
+        message,
+      });
+
+      await data.save();
+
+      await notificationEmail({
+        email: user.email,
+        candidateName: user.name,
+        companyName: company.companyName,
+        employeerName: req.user.name,
+        subject,
+        message,
+      });
+
+      return res.redirect("/employeer/interview");
     } catch (error) {
       console.log(error.message);
 

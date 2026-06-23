@@ -63,8 +63,10 @@ const interviewSchema = Joi.object({
 });
 
 const notificationSchema = Joi.object({
-  userID: Joi.string().required().messages({
-    "any.required": "User Id is required",
+  subject: Joi.string().min(3).max(100).required().messages({
+    "string.min": "Notification subject must be at least 3 characters",
+    "string.max": "Notification subject cannot exceed 100 characters",
+    "any.required": "Notification subject is required",
   }),
 
   message: Joi.string().min(3).max(5000).required().messages({
@@ -78,5 +80,5 @@ module.exports = {
   companySchema,
   jobSchema,
   interviewSchema,
-  notificationSchema
+  notificationSchema,
 };

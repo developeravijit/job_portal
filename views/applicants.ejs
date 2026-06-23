@@ -132,7 +132,7 @@
 
               </form>
 
-              <% } else if(application.status === "reviewing"){ %>
+              <% }  else if(application.status === "reviewing"){ %>
 
               <form action="/employeer/application/status/<%= application._id %>" method="POST">
 
@@ -147,6 +147,28 @@
               <form action="/employeer/application/status/<%= application._id %>" method="POST">
 
                 <input type="hidden" name="status" value="rejected">
+
+                <input type="hidden" name="redirectTo" value="<%= req.originalUrl %>">
+
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg">
+                  Reject
+                </button>
+
+              </form>
+
+              <% } else if(application.status === "selected"){ %>
+
+              <a href="/employeer/notification/<%= application.candidateID %>" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+
+                Send Interview Email
+
+              </a>
+
+              <form action="/employeer/application/status/<%= application._id %>" method="POST">
+
+                <input type="hidden" name="status" value="rejected">
+
+                <input type="hidden" name="redirectTo" value="<%= req.originalUrl %>">
 
                 <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg">
                   Reject

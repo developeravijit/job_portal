@@ -289,11 +289,68 @@ class dashboardController {
         jobID: { $in: jobIds },
       });
 
+      const selectedCandidates = await Application.countDocuments({
+        jobID: { $in: jobIds },
+        status: "selected",
+      });
+
+      const reviewingCandidates = await Application.countDocuments({
+        jobID: { $in: jobIds },
+        status: "reviewing",
+      });
+
+      const recentApplicants = await Application.aggregate([
+        {
+          $match: {
+            jobID: { $in: jobIds },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "candidateID",
+            foreignField: "_id",
+            as: "candidate",
+          },
+        },
+        {
+          $unwind: "$candidate",
+        },
+        {
+          $lookup: {
+            from: "jobs",
+            localField: "jobID",
+            foreignField: "_id",
+            as: "job",
+          },
+        },
+        {
+          $unwind: "$job",
+        },
+        {
+          $project: {
+            candidateName: "$candidate.name",
+            jobTitle: "$job.title",
+            status: 1,
+            createdAt: 1,
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $limit: 5,
+        },
+      ]);
+
       res.render("employeerHome", {
         user,
         totalCompany,
         totalJobs,
         totalApplicants,
+        selectedCandidates,
+        reviewingCandidates,
+        recentApplicants,
       });
     } catch (error) {
       return res.status(500).render("500", {

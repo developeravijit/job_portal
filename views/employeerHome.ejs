@@ -6,7 +6,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-slate-100">
 
   <div class="flex">
 
@@ -14,26 +14,214 @@
 
     <main class="flex-1 p-8">
 
-      <h2 class="text-3xl font-bold mb-8">
-        Welcome <%= user.name %>
-      </h2>
+      <!-- Welcome -->
+      <div class="mb-8">
 
-      <div class="grid grid-cols-3 gap-5">
+        <h1 class="text-4xl font-bold text-slate-800">
+          Welcome, <%= user.name %>
+        </h1>
 
+        <p class="text-slate-500 mt-2">
+          Manage jobs, applicants and interviews from one dashboard.
+        </p>
 
-        <div class="bg-white p-6 rounded shadow">
-          <h3>Total Jobs</h3>
-          <p class="text-3xl font-bold">
+      </div>
+
+      <!-- Statistics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
+
+        <div class="bg-white p-6 rounded-xl shadow">
+
+          <p class="text-slate-500 text-sm">
+            Companies
+          </p>
+
+          <h2 class="text-3xl font-bold mt-2">
+            <%= totalCompany %>
+          </h2>
+
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+
+          <p class="text-slate-500 text-sm">
+            Jobs Posted
+          </p>
+
+          <h2 class="text-3xl font-bold mt-2">
             <%= totalJobs %>
-          </p>
+          </h2>
+
         </div>
 
-        <div class="bg-white p-6 rounded shadow">
-          <h3>Total Applicants</h3>
-          <p class="text-3xl font-bold">
-            <%= totalApplicants %>
+        <div class="bg-white p-6 rounded-xl shadow">
+
+          <p class="text-slate-500 text-sm">
+            Applicants
           </p>
+
+          <h2 class="text-3xl font-bold mt-2">
+            <%= totalApplicants %>
+          </h2>
+
         </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+
+          <p class="text-slate-500 text-sm">
+            Selected
+          </p>
+
+          <h2 class="text-3xl font-bold text-green-600 mt-2">
+            <%= selectedCandidates %>
+          </h2>
+
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+
+          <p class="text-slate-500 text-sm">
+            Reviewing
+          </p>
+
+          <h2 class="text-3xl font-bold text-yellow-500 mt-2">
+            <%= reviewingCandidates %>
+          </h2>
+
+        </div>
+
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow p-6 mb-8">
+
+        <h2 class="text-xl font-bold mb-5">
+          Quick Actions
+        </h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+          <a href="/employeer/create/job" class="bg-blue-600 hover:bg-blue-700 text-white text-center py-4 rounded-xl font-medium">
+
+            Create Job
+
+          </a>
+
+          <a href="/employeer/applicants" class="bg-green-600 hover:bg-green-700 text-white text-center py-4 rounded-xl font-medium">
+
+            Applicants
+
+          </a>
+
+          <a href="/employeer/jobs" class="bg-purple-600 hover:bg-purple-700 text-white text-center py-4 rounded-xl font-medium">
+
+            All Jobs
+
+          </a>
+
+          <a href="/employeer/myCompany" class="bg-orange-500 hover:bg-orange-600 text-white text-center py-4 rounded-xl font-medium">
+
+            Company Profile
+
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- Recent Applicants -->
+      <div class="bg-white rounded-xl shadow p-6">
+
+        <div class="flex justify-between items-center mb-6">
+
+          <h2 class="text-xl font-bold">
+            Recent Applicants
+          </h2>
+
+          <a href="/employeer/applicants" class="text-blue-600 font-medium">
+
+            View All
+
+          </a>
+
+        </div>
+
+        <% if(recentApplicants.length > 0){ %>
+
+        <div class="space-y-4">
+
+          <% recentApplicants.forEach(item => { %>
+
+          <div class="border rounded-xl p-4 hover:bg-slate-50 transition">
+
+            <div class="flex justify-between items-start">
+
+              <div>
+
+                <h3 class="font-semibold text-lg">
+                  <%= item.candidateName %>
+                </h3>
+
+                <p class="text-slate-500 text-sm mt-1">
+                  Applied for
+                  <span class="font-medium text-slate-700">
+                    <%= item.jobTitle %>
+                  </span>
+                </p>
+
+              </div>
+
+              <% if(item.status === "submitted"){ %>
+
+              <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                Submitted
+              </span>
+
+              <% } %>
+
+              <% if(item.status === "reviewing"){ %>
+
+              <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                Reviewing
+              </span>
+
+              <% } %>
+
+              <% if(item.status === "selected"){ %>
+
+              <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                Selected
+              </span>
+
+              <% } %>
+
+              <% if(item.status === "rejected"){ %>
+
+              <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+                Rejected
+              </span>
+
+              <% } %>
+
+            </div>
+
+          </div>
+
+          <% }) %>
+
+        </div>
+
+        <% } else { %>
+
+        <div class="text-center py-8">
+
+          <p class="text-slate-500">
+            No recent applicants found.
+          </p>
+
+        </div>
+
+        <% } %>
 
       </div>
 

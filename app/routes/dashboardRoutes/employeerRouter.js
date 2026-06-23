@@ -95,12 +95,48 @@ employeer.post(
   employeerController.editJob,
 );
 
+// Delete Job
+employeer.post(
+  "/job/delete/:id",
+  authCheck,
+  permission("employeer"),
+  employeerController.deleteJob,
+);
+employeer.get(
+  "/deleted/jobs",
+  authCheck,
+  permission("employeer"),
+  employeerController.deletedJobsPage,
+);
+
+// Restore Job
+employeer.post(
+  "/restore-job/:id",
+  authCheck,
+  permission("employeer"),
+  employeerController.restoreJob,
+);
+
 // Change Status
 employeer.post(
   "/application/status/:id",
   authCheck,
   permission("employeer"),
   employeerController.changeStatus,
+);
+
+// Notification
+employeer.get(
+  "/notification/:id",
+  authCheck,
+  permission("employeer"),
+  employeerController.notificationPage,
+);
+employeer.post(
+  "/send-notification/:id",
+  authCheck,
+  permission("employeer"),
+  employeerController.sendNotification,
 );
 
 module.exports = employeer;

@@ -75,7 +75,7 @@ const notificationEmail = async (user) => {
       html: notificationTemplate(
         user.candidateName,
         user.companyName,
-        user.subject,
+        user.employeerName,
         user.message,
       ),
     });

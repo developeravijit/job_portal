@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Send Notification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow">
+
+        <h1 class="text-3xl font-bold mb-6">
+          Send Candidate Notification
+        </h1>
+
+        <form action="/employeer/send-notification/<%= user._id %>" method="POST">
+
+          <div class="mb-5">
+
+            <label class="block mb-2 font-semibold">
+              Candidate
+            </label>
+
+            <input type="text" value="<%= user.name %>" disabled class="w-full capitalize border rounded-lg p-3 bg-gray-100">
+
+          </div>
+
+          <div class="mb-5">
+
+            <label class="block mb-2 font-semibold">
+              Subject
+            </label>
+
+            <input type="text" name="subject" required class="w-full border rounded-lg p-3">
+
+          </div>
+
+          <div class="mb-5">
+
+            <label class="block mb-2 font-semibold">
+              Message
+            </label>
+
+            <textarea name="message" rows="8" required class="w-full border rounded-lg p-3"></textarea>
+
+          </div>
+
+          <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg">
+
+            Send Notification
+
+          </button>
+
+        </form>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

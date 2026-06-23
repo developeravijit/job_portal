@@ -302,98 +302,53 @@ const resetPasswordTemplate = (name, resetLink) => {
 };
 
 // Notification Template
-const notificationTemplate = (candidateName, companyName, subject, message) => {
+const notificationTemplate = (
+  candidateName,
+  companyName,
+  employeerName,
+  message,
+) => {
   return `
   <!DOCTYPE html>
   <html>
   <head>
     <meta charset="UTF-8">
-    <title>${subject}</title>
   </head>
-  <body style="margin:0;padding:40px 20px;background:#f4f4f4;font-family:Arial,sans-serif;">
 
-    <div style="
-      max-width:600px;
-      margin:0 auto;
-      background:#ffffff;
-      border-radius:10px;
-      overflow:hidden;
-      box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  <body style="
+    margin:0;
+    padding:40px;
+    font-family:Arial,sans-serif;
+    color:#333333;
+    background:#ffffff;
+  ">
+
+    <p style="
+      margin:10px 0 0 0;
+      font-size:16px;
     ">
+      Hello ${candidateName},
+    </p>
 
-      <div style="
-        background:#2563eb;
-        padding:30px;
-        text-align:center;
-      ">
-        <h1 style="
-          color:#ffffff;
-          margin:0;
-          font-size:28px;
-        ">
-          Candidate Notification
-        </h1>
-      </div>
+    <p style="
+      margin:0;
+      font-size:16px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    ">
+      ${message}
+    </p>
 
-      <div style="padding:40px 30px;">
 
-        <h2 style="color:#333;">
-          Hello ${candidateName},
-        </h2>
-
-        <p style="
-          color:#555;
-          font-size:16px;
-          line-height:1.8;
-        ">
-          We have an important update regarding your application.
-        </p>
-
-        <div style="
-          background:#f8fafc;
-          border-left:4px solid #2563eb;
-          padding:20px;
-          margin:25px 0;
-          border-radius:4px;
-        ">
-          <h3 style="margin-top:0;color:#111827;">
-            ${subject}
-          </h3>
-
-          <p style="
-            color:#4b5563;
-            line-height:1.8;
-            margin-bottom:0;
-          ">
-            ${message}
-          </p>
-        </div>
-
-        <p style="
-          color:#555;
-          line-height:1.8;
-        ">
-          If you have any questions, please contact our recruitment team.
-        </p>
-
-        <p style="margin-top:30px;">
-          Regards,<br>
-          <strong>${companyName}</strong>
-        </p>
-
-      </div>
-
-      <div style="
-        text-align:center;
-        padding:20px;
-        background:#f9fafb;
-        color:#6b7280;
-        font-size:13px;
-      ">
-        © 2026 ${companyName}. All rights reserved.
-      </div>
-
-    </div>
+    <p style="
+      margin:0;
+      font-size:16px;
+      line-height:1.7;
+    ">
+      Regards,<br>
+      <strong style="text-transform: capitalize">${employeerName}</strong><br>
+      ${companyName}
+    </p>
 
   </body>
   </html>

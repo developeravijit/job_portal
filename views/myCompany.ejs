@@ -50,11 +50,11 @@
         <!-- Banner -->
         <div class="bg-gradient-to-r from-blue-700 to-indigo-700 p-10">
 
-          <h2 class="text-4xl font-bold text-white">
+          <h2 class="text-4xl capitalize text-center font-bold text-white">
             <%= company.companyName %>
           </h2>
 
-          <p class="text-blue-100 mt-2">
+          <p class="text-blue-100 mt-2.5 uppercase text-center ">
             <%= company.industry %>
           </p>
 
@@ -70,7 +70,7 @@
                 Company Website
               </h3>
 
-              <a href="<%= company.website %>" target="_blank" class="text-blue-600 hover:underline text-lg">
+              <a href="<%= company.website %>" target="_blank" class="text-blue-600 lowercase hover:underline text-lg">
 
                 <%= company.website %>
 
@@ -83,7 +83,7 @@
                 Industry
               </h3>
 
-              <p class="text-lg font-medium text-gray-800">
+              <p class="text-lg font-medium text-gray-800 uppercase">
                 <%= company.industry %>
               </p>
             </div>

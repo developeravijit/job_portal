@@ -181,21 +181,23 @@ class companyController {
         });
       }
 
-      const { userID, subject, message } = value;
+      const user = await User.findById(req.params.id);
+
+      const { subject, message } = value;
 
       const company = await Company.findOne({
         employeerID: req.user.id,
       });
 
-      if (!company) {
+      if (!user || !company) {
         return res.status(httpCodes.not_found).json({
           success: false,
-          message: "Company not found",
+          message: "Data not found",
         });
       }
 
       const data = new Notification({
-        userID,
+        userID: user._id,
         companyID: company._id,
         subject,
         message,

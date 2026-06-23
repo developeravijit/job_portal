@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Deleted Jobs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="flex">
+
+    <%- include("layout/employeerSidebar.ejs") %>
+
+    <main class="flex-1 p-8">
+
+      <div class="bg-white rounded-xl shadow p-6">
+
+        <div class="flex justify-between items-center mb-6">
+
+          <h1 class="text-3xl font-bold">
+            Deleted Jobs
+          </h1>
+
+          <a href="/employeer/jobs" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+
+            Active Jobs
+
+          </a>
+
+        </div>
+
+        <% if(jobs.length === 0){ %>
+
+        <div class="text-center py-12">
+
+          <h2 class="text-xl text-gray-500">
+            No deleted jobs found
+          </h2>
+
+        </div>
+
+        <% } %>
+
+        <div class="space-y-4">
+
+          <% jobs.forEach(job => { %>
+
+          <div class="border rounded-xl p-5">
+
+            <h3 class="text-xl font-semibold capitalize">
+              <%= job.title %>
+            </h3>
+
+            <p class="text-gray-600 mt-2">
+              <%= job.location %>
+            </p>
+
+            <p class="text-green-600 mt-1">
+              ₹<%= job.salary %>
+            </p>
+
+            <div class="mt-4 flex gap-3">
+
+              <a href="/employeer/job/<%= job._id %>" class="bg-gray-600 text-white px-4 py-2 rounded-lg">
+
+                View
+
+              </a>
+
+              <form action="/employeer/restore-job/<%= job._id %>" method="POST">
+
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+
+                  Restore
+
+                </button>
+
+              </form>
+
+            </div>
+
+          </div>
+
+          <% }) %>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>
