@@ -7,100 +7,193 @@
   <title>Login</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-slate-50">
 
+  <!-- Navbar -->
+  <%- include("layout/publicNavbar.ejs") %>
 
-  <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+  <section class="min-h-[90vh]">
 
-    <div class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Welcome Back</h1>
-      <p class="text-gray-500 mt-2">Login to your account</p>
-    </div>
+    <div class="max-w-7xl mx-auto px-6 py-16">
 
-    <% if (error) { %>
-    <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-      <%= error %>
-    </div>
-    <% } %>
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
 
-    <% if (success) { %>
-    <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
-      <%= success %>
-    </div>
-    <% } %>
+        <!-- Left -->
 
-    <form action="/dashboard/login" method="POST" class="space-y-4">
+        <div>
 
-      <!-- Email -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Email
-        </label>
-        <input type="email" name="email" placeholder="Enter your email" value="<%= oldData?.email || '' %>" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
+          <span class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+            #1 Job Portal Platform
+          </span>
 
-      <!-- Password -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Password
-        </label>
+          <h1 class="text-6xl font-bold mt-6 leading-tight">
+            Build Your
+            <span class="text-blue-600">
+              Career
+            </span>
+            With Confidence
+          </h1>
 
-        <div class="relative">
-          <input type="password" id="password" name="password" placeholder="Enter your password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12" />
+          <p class="mt-6 text-xl text-slate-600">
+            Discover thousands of opportunities from top companies.
+          </p>
 
-          <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-3 flex items-center text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16">
-              <path d="M0 0h16v16H0z" fill="none" />
-              <path fill="#000" d="M3 8.5a1 1 0 1 0 0-2a1 1 0 0 0 0 2" />
-              <path fill="#000" fill-rule="evenodd" d="M4.5 3c1.56 0 2.94.794 3.75 2h5.26a1 1 0 0 1 .807.409l1.49 2.04a.99.99 0 0 1 .033 1.13l-1.26 1.95a.997.997 0 0 1-1.41.276L12.02 10l-1.19.812a1 1 0 0 1-1.13 0L8.51 10h-.258c-.808 1.21-2.18 2-3.75 2a4.5 4.5 0 0 1 0-9zm3.75 6a1 1 0 0 0-.832.444c-.63.94-1.7 1.56-2.91 1.56c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5c1.21 0 2.28.616 2.91 1.56c.186.277.498.444.832.444h5.26L15 8.048l-1.26 1.95l-1.15-.805a1 1 0 0 0-1.14-.005L10.26 10l-1.19-.812a1 1 0 0 0-.566-.175h-.258z" clip-rule="evenodd" />
-            </svg>
+          <div class="grid grid-cols-3 gap-6 mt-10">
 
-          </button>
+            <div>
+              <h3 class="text-3xl font-bold text-blue-600">
+                10K+
+              </h3>
+              <p class="text-slate-500">
+                Jobs
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-3xl font-bold text-blue-600">
+                5K+
+              </h3>
+              <p class="text-slate-500">
+                Companies
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-3xl font-bold text-blue-600">
+                50K+
+              </h3>
+              <p class="text-slate-500">
+                Candidates
+              </p>
+            </div>
+
+          </div>
+
         </div>
+
+        <!-- Right Side -->
+
+        <div>
+
+          <div class="bg-white rounded-3xl shadow-xl p-10">
+
+            <h2 class="text-3xl font-bold text-center">
+              Welcome Back
+            </h2>
+
+            <p class="text-center text-slate-500 mt-2 mb-8">
+              Login to continue your career journey
+            </p>
+
+            <% if (error) { %>
+            <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-xl">
+              <%= error %>
+            </div>
+            <% } %>
+
+            <% if (success) { %>
+            <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-xl">
+              <%= success %>
+            </div>
+            <% } %>
+
+            <form action="/dashboard/login" method="POST" class="space-y-5">
+
+              <div>
+
+                <label class="block mb-2 font-medium text-slate-700">
+                  Email Address
+                </label>
+
+                <input type="email" name="email" value="<%= oldData?.email || '' %>" placeholder="Enter your email" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
+
+              </div>
+
+              <div>
+
+                <label class="block mb-2 font-medium text-slate-700">
+                  Password
+                </label>
+
+                <div class="relative">
+
+                  <input type="password" id="password" name="password" placeholder="Enter your password" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 pr-12">
+
+                  <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+
+                    <i class="fa-regular fa-eye"></i>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div class="flex justify-end">
+
+                <a href="/dashboard/forgot-password" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+
+                  Forgot Password?
+
+                </a>
+
+              </div>
+
+              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition">
+
+                Login
+
+              </button>
+
+            </form>
+
+            <div class="mt-8 text-center">
+
+              <p class="text-slate-500">
+                Don't have an account?
+              </p>
+
+              <div class="flex gap-3 mt-4">
+
+                <a href="/dashboard/user/register" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium">
+
+                  User Register
+
+                </a>
+
+                <a href="/dashboard/employeer/register" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-medium">
+
+                  Employer Register
+
+                </a>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
-      <!-- Forgot Password -->
-      <div class="text-right">
-        <a href="/dashboard/forgot-password" class="text-sm text-blue-600 hover:underline">
-          Forgot Password?
-        </a>
-      </div>
-
-      <!-- Login Button -->
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200">
-        Login
-      </button>
-
-    </form>
-
-    <div class="mt-6 text-center">
-      <p class="text-sm text-gray-500 mb-3">
-        Don't have an account?
-      </p>
-
-      <div class="flex gap-3 justify-center">
-        <a href="/dashboard/user/register" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-          Register as User
-        </a>
-
-        <a href="/dashboard/employeer/register" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-          Register as Employeer
-        </a>
-      </div>
     </div>
 
-  </div>
+  </section>
 
   <script>
     function togglePassword() {
       const password = document.getElementById("password");
 
-      password.type =
-        password.type === "password" ?
-        "text" :
-        "password";
+      if (password.type === "password") {
+        password.type = "text";
+      } else {
+        password.type = "password";
+      }
     }
   </script>
 

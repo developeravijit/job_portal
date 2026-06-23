@@ -6,19 +6,11 @@ const permission = require("../../middleware/dashboardMiddleware/dashboardPermis
 const dashboard = express.Router();
 
 // User Register
-dashboard.get(
-  "/user/register",
-  authCheck,
-  dashboardController.userRegisterPage,
-);
+dashboard.get("/user/register", dashboardController.userRegisterPage);
 dashboard.post("/user/register", dashboardController.userRegister);
 
 // Employeer Register
-dashboard.get(
-  "/employeer/register",
-  authCheck,
-  dashboardController.employeerRegisterPage,
-);
+dashboard.get("/employeer/register", dashboardController.employeerRegisterPage);
 dashboard.post("/employeer/register", dashboardController.employeerRegister);
 
 // Verify

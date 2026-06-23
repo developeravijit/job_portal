@@ -10,26 +10,30 @@ const candidate = require("./dashboardRoutes/candidateRouter");
 const router = express.Router();
 
 const cloudinary = require("../config/cloudinary");
+const dashboardController = require("../controller/dashboardController/dashboardController");
 
-// Users
+// Landing Page
+router.get("/", dashboardController.landingPage);
+
+// User API
 router.use("/api/v1/user", user);
 
-// Company
+// Company API
 router.use("/api/v1/company", company);
 
-// Job Application
+// Job Application API
 router.use("/api/application", jobApplication);
 
-// Dashboard
+// Dashboard EJS
 router.use("/dashboard", dashboard);
 
-// Employeer Dashboard Pages
+// Employeer Dashboard Pages EJS
 router.use("/employeer", employeer);
 
-// Candidate Dashboard Pages
+// Candidate Dashboard Pages EJS
 router.use("/candidate", candidate);
 
-// Admin Dashboard
+// Admin Dashboard EJS
 router.use("/admin", admin);
 
 module.exports = router;

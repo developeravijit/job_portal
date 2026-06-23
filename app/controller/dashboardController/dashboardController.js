@@ -26,6 +26,74 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 class dashboardController {
+  // Landing Page
+  async landingPage(req, res) {
+    try {
+      const jobs = await Job.aggregate([
+        { $sort: { createdAt: -1 } },
+        { $limit: 6 },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "employeerID",
+            foreignField: "employeerID",
+            as: "company",
+          },
+        },
+        {
+          $unwind: {
+            path: "$company",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ]);
+
+      const statistics = await Job.aggregate([
+        {
+          $facet: {
+            totalJobs: [
+              {
+                $count: "count",
+              },
+            ],
+
+            totalCompanies: [
+              {
+                $lookup: {
+                  from: "companies",
+                  localField: "employeerID",
+                  foreignField: "employeerID",
+                  as: "company",
+                },
+              },
+              {
+                $unwind: "$company",
+              },
+              {
+                $group: {
+                  _id: "$company._id",
+                },
+              },
+              {
+                $count: "count",
+              },
+            ],
+          },
+        },
+      ]);
+
+      res.render("landingPage", {
+        jobs,
+        totalJobs: statistics[0].totalJobs[0]?.count || 0,
+        totalCompanies: statistics[0].totalCompanies[0]?.count || 0,
+      });
+    } catch (error) {
+      return res.status(500).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
   // User Register Page
   async userRegisterPage(req, res) {
     res.render("userRegister", {
