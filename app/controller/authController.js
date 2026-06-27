@@ -346,7 +346,16 @@ class authController {
   // New Access Token
   async newToken(req, res) {
     try {
-      const { refreshToken } = req.body;
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader?.startsWith("Bearer ")) {
+        return res.status(httpCodes.bad_request).json({
+          success: false,
+          message: "Refresh token required",
+        });
+      }
+
+      const refreshToken = authHeader.split(" ")[1];
 
       const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 

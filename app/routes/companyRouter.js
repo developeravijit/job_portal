@@ -113,7 +113,7 @@ company.post(
 company.get(
   "/jobs",
   authCheck,
-  permission("employeer"),
+  permission("employer"),
   companyController.showJobs,
 );
 
