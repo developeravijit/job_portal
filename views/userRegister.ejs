@@ -93,7 +93,7 @@
             </div>
             <% } %>
 
-            <form action="/dashboard/user/register" method="POST" class="space-y-5">
+            <form action="/job-portal/candidate/register" method="POST" class="space-y-5">
 
               <div>
 
@@ -121,7 +121,7 @@
                   Phone Number
                 </label>
 
-                <input type="text" name="phone" value="<%= oldData?.phone || '' %>" placeholder="Enter your phone number" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
+                <input type="number" name="phone" value="<%= oldData?.phone || '' %>" placeholder="Enter your phone number" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
 
               </div>
 
@@ -159,7 +159,7 @@
                 Already have an account?
               </p>
 
-              <a href="/dashboard/login" class="inline-block mt-3 text-blue-600 font-semibold hover:text-blue-700">
+              <a href="/job-portal/login" class="inline-block mt-3 text-blue-600 font-semibold hover:text-blue-700">
 
                 Login Here
 

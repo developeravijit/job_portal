@@ -20,7 +20,7 @@ const {
 } = require("../utils/token");
 const jwt = require("jsonwebtoken");
 
-class userController {
+class authController {
   // Register
   async register(req, res) {
     try {
@@ -65,8 +65,8 @@ class userController {
       return res.status(httpCodes.created).json({
         success: true,
         message:
-          data.role === "employeer"
-            ? "Employeer register successfully"
+          data.role === "employer"
+            ? "employer register successfully"
             : data.role === "admin"
               ? "Admin register successfully"
               : "User register successfully",
@@ -136,8 +136,8 @@ class userController {
       return res.status(httpCodes.ok).json({
         success: true,
         message:
-          data.role === "employeer"
-            ? "Employeer verified successfully"
+          data.role === "employer"
+            ? "employer verified successfully"
             : data.role == "admin"
               ? "Admin verified successfully"
               : "User verified successfully",
@@ -225,8 +225,8 @@ class userController {
           message:
             userData.role === "admin"
               ? "Admin is not verified"
-              : userData.role === "employeer"
-                ? "Employeer is not verified"
+              : userData.role === "employer"
+                ? "employer is not verified"
                 : "User is not verified",
         });
       }
@@ -237,8 +237,8 @@ class userController {
           message:
             userData.role === "admin"
               ? "Admin is not active"
-              : userData.role === "employeer"
-                ? "Employeer is not active"
+              : userData.role === "employer"
+                ? "employer is not active"
                 : "User is not active",
         });
       }
@@ -259,6 +259,18 @@ class userController {
 
       const result = await userData.save();
 
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 30 * 60 * 1000,
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
       const data = result.toObject();
       delete data.password;
       delete data.refreshToken;
@@ -268,8 +280,8 @@ class userController {
         message:
           data.role === "admin"
             ? "Admin login successfully"
-            : data.role === "employeer"
-              ? "Employeer login successfully"
+            : data.role === "employer"
+              ? "employer login successfully"
               : "User login successfully",
 
         data: {
@@ -279,6 +291,49 @@ class userController {
             refreshToken,
           },
         },
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  // Logout
+  async logout(req, res) {
+    try {
+      const data = await User.findById(req.user.id);
+
+      if (!data) {
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+
+        return res.status(httpCodes.not_found).json({
+          success: false,
+          message:
+            data.role === "admin"
+              ? "Admin not found"
+              : data.role === "employer"
+                ? "Employer not found"
+                : "User not found",
+        });
+      }
+
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
+      data.refreshToken = null;
+      await data.save();
+
+      return res.status(httpCodes.ok).json({
+        success: true,
+        message:
+          data.role === "admin"
+            ? "Admin logout successfully"
+            : data.role === "employer"
+              ? "Employer logout successfully"
+              : "User logout successfully",
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({
@@ -346,8 +401,8 @@ class userController {
           message:
             data.role === "admin"
               ? "Admin is not verified"
-              : data.role === "employeer"
-                ? "Employeer is not verified"
+              : data.role === "employer"
+                ? "employer is not verified"
                 : "User is not verified",
         });
       }
@@ -358,8 +413,8 @@ class userController {
           message:
             data.role === "admin"
               ? "Admin is not active"
-              : data.role === "employeer"
-                ? "Employeer is not active"
+              : data.role === "employer"
+                ? "employer is not active"
                 : "User is not active",
         });
       }
@@ -445,28 +500,74 @@ class userController {
     }
   }
 
-  // Show All Users
+  // Show All Candidates
   async showUser(req, res) {
     try {
-      const data = await User.find({
-        role: "user",
-        status: true,
-        isVerified: true,
-      }).select("-password");
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
 
-      if (!data || data.length === 0) {
-        return res.status(httpCodes.not_found).json({
-          success: false,
-          message: "User not found",
-        });
+      const admin = await User.findById(req.user.id).select(
+        "-password -refreshToken",
+      );
+
+      const match = { role: "user" };
+
+      if (search) {
+        match.$or = [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            email: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
       }
+
+      const totalCandidates = await User.countDocuments(match);
+
+      const candidates = await User.aggregate([
+        {
+          $match: match,
+        },
+        {
+          $project: {
+            password: 0,
+            refreshToken: 0,
+          },
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.max(1, Math.ceil(totalCandidates / limit));
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "All active users list",
+        message: "All candidates list",
         data: {
-          TotalUsers: data.length,
-          data,
+          admin,
+          candidates,
+          totalCandidates,
+          currentPage: page,
+          totalPages,
+          search,
         },
       });
     } catch (error) {
@@ -477,28 +578,74 @@ class userController {
     }
   }
 
-  // Show All Employeers
-  async showEmployeer(req, res) {
+  // Show All employers
+  async showemployer(req, res) {
     try {
-      const data = await User.find({
-        role: "employeer",
-        status: true,
-        isVerified: true,
-      }).select("-password");
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
 
-      if (!data || data.length === 0) {
-        return res.status(httpCodes.not_found).json({
-          success: false,
-          message: "Employeer not found",
-        });
+      const admin = await User.findById(req.user.id).select(
+        "-password -refreshToken",
+      );
+
+      const match = { role: "employer" };
+
+      if (search) {
+        match.$or = [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            email: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
       }
+
+      const totalEmployer = await User.countDocuments(match);
+
+      const employers = await User.aggregate([
+        {
+          $match: match,
+        },
+        {
+          $project: {
+            password: 0,
+            refreshToken: 0,
+          },
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.max(1, Math.ceil(totalEmployer / limit));
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "All active employeers list",
+        message: "All employers list",
         data: {
-          TotalUsers: data.length,
-          data,
+          admin,
+          employers,
+          totalEmployer,
+          currentPage: page,
+          totalPages,
+          search,
         },
       });
     } catch (error) {
@@ -521,7 +668,7 @@ class userController {
       if (!data || data.length === 0) {
         return res.status(httpCodes.not_found).json({
           success: false,
-          message: "Employeer not found",
+          message: "employer not found",
         });
       }
 
@@ -541,7 +688,7 @@ class userController {
     }
   }
 
-  // Update All User
+  // Update All Candidate
   async updateUser(req, res) {
     try {
       const { id } = req.params;
@@ -562,6 +709,11 @@ class userController {
         });
       }
 
+      if (req.file) {
+        userData.avatar = req.file.path;
+        userData.public_id = req.file.filename;
+      }
+
       const updateData = await User.findByIdAndUpdate(id, userData, {
         new: true,
         runValidators: true,
@@ -580,15 +732,15 @@ class userController {
     }
   }
 
-  // Update All Employeer
-  async updateEmployeer(req, res) {
+  // Update All employer
+  async updateemployer(req, res) {
     try {
       const { id } = req.params;
       const userData = req.body;
 
       const dataById = await User.findOne({
         _id: id,
-        role: "employeer",
+        role: "employer",
         status: true,
         isVerified: true,
       });
@@ -596,19 +748,24 @@ class userController {
       if (!dataById) {
         return res.status(httpCodes.bad_request).json({
           success: false,
-          message: "Employeer not found",
+          message: "employer not found",
         });
       }
 
-      const updateEmployeer = await User.findByIdAndUpdate(id, userData, {
+      if (req.file) {
+        userData.avatar = req.file.path;
+        userData.public_id = req.file.filename;
+      }
+
+      const updateemployer = await User.findByIdAndUpdate(id, userData, {
         new: true,
         runValidators: true,
       }).select("-password -refreshToken");
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "Employeer data updated successfully",
-        data: updateEmployeer,
+        message: "employer data updated successfully",
+        data: updateemployer,
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({
@@ -761,14 +918,14 @@ class userController {
     }
   }
 
-  // Inactive Employeer
-  async inactiveEmployeer(req, res) {
+  // Inactive employer
+  async inactiveemployer(req, res) {
     try {
       const { id } = req.params;
 
       const data = await User.findOne({
         _id: id,
-        role: "employeer",
+        role: "employer",
         status: true,
         isVerified: true,
       });
@@ -776,11 +933,11 @@ class userController {
       if (!data) {
         return res.status(httpCodes.bad_request).json({
           success: false,
-          message: "Employeer not found",
+          message: "employer not found",
         });
       }
 
-      const inactiveEmployeer = await User.findByIdAndUpdate(
+      const inactiveemployer = await User.findByIdAndUpdate(
         id,
         { status: false },
         { new: true, runValidators: true },
@@ -788,7 +945,7 @@ class userController {
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "Employeer inactive successfully",
+        message: "employer inactive successfully",
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({
@@ -798,24 +955,24 @@ class userController {
     }
   }
 
-  // Show Inactive Employeers
-  async showInactiveEmployeers(req, res) {
+  // Show Inactive employers
+  async showInactiveemployers(req, res) {
     try {
       const data = await User.find({
-        role: "employeer",
+        role: "employer",
         status: false,
       });
 
       if (!data || data.length === 0) {
         return res.status(httpCodes.bad_request).json({
           success: false,
-          message: "Inactive Employeers not found",
+          message: "Inactive employers not found",
         });
       }
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "All inactive employeers list",
+        message: "All inactive employers list",
         data: {
           totalUsers: data.length,
           data,
@@ -829,14 +986,14 @@ class userController {
     }
   }
 
-  // Restore Inactive Employeer
-  async restoreEmployeer(req, res) {
+  // Restore Inactive employer
+  async restoreemployer(req, res) {
     try {
       const { id } = req.params;
 
       const data = await User.findOne({
         _id: id,
-        role: "employeer",
+        role: "employer",
         status: false,
         isVerified: true,
       });
@@ -844,11 +1001,11 @@ class userController {
       if (!data) {
         return res.status(httpCodes.bad_request).json({
           success: false,
-          message: "Employeer not found",
+          message: "employer not found",
         });
       }
 
-      const inactiveEmployeer = await User.findByIdAndUpdate(
+      const inactiveemployer = await User.findByIdAndUpdate(
         id,
         { status: true },
         { new: true, runValidators: true },
@@ -856,7 +1013,7 @@ class userController {
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "Employeer active successfully",
+        message: "employer active successfully",
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({
@@ -866,12 +1023,12 @@ class userController {
     }
   }
 
-  // Show Companies for all employeers
-  async employeerCompanies(req, res) {
+  // Show Companies for all employers
+  async employerCompanies(req, res) {
     try {
       const data = await User.aggregate([
         {
-          $match: { role: "employeer" },
+          $match: { role: "employer" },
         },
         {
           $project: {
@@ -886,7 +1043,7 @@ class userController {
           $lookup: {
             from: "companies",
             localField: "_id",
-            foreignField: "employeerID",
+            foreignField: "employerID",
             as: "company",
           },
         },
@@ -894,7 +1051,7 @@ class userController {
 
       return res.status(httpCodes.ok).json({
         success: true,
-        message: "Company Details for employeers",
+        message: "Company Details for employers",
         data: data,
       });
     } catch (error) {
@@ -906,4 +1063,4 @@ class userController {
   }
 }
 
-module.exports = new userController();
+module.exports = new authController();

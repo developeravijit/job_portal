@@ -1,0 +1,198 @@
+<!-- Sidebar -->
+<aside id="sidebar" class="w-72 bg-zinc-950 border-r border-zinc-800 transition-all duration-300 flex flex-col">
+
+  <!-- Logo -->
+  <div class="h-20 flex items-center justify-between px-6 border-b border-zinc-800">
+
+    <div class="flex items-center gap-3">
+
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center">
+
+        <span class="text-white font-bold text-xl">
+          A
+        </span>
+
+      </div>
+
+      <div id="logoText">
+
+        <h2 class="text-white font-bold text-lg">
+          Admin Panel
+        </h2>
+
+        <p class="text-zinc-500 text-xs">
+          Job Portal
+        </p>
+
+      </div>
+
+    </div>
+
+    <button onclick="toggleSidebar()" class="text-zinc-400 hover:text-white text-xl">
+
+      ☰
+
+    </button>
+
+  </div>
+
+  <!-- Menu -->
+  <div class="flex-1 overflow-y-auto py-6">
+
+    <ul class="space-y-2 px-3">
+
+      <li>
+        <a href="/admin/dashboard/home" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl <%= activePage === 'dashboard' ? 'bg-purple-700 text-white' : 'hover:bg-zinc-800 text-zinc-300' %> transition">
+
+          <span class="text-xl">🏠</span>
+
+          <span class="menu-text">
+            Dashboard
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="/admin/dashboard/candidates" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl <%= activePage === 'candidates' ? 'bg-purple-700 text-white' : 'hover:bg-zinc-800 text-zinc-300' %> transition">
+
+          <span class="text-xl">👥</span>
+
+          <span class="menu-text">
+            Candidates
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="/admin/dashboard/employers" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl <%= activePage === 'employers' ? 'bg-purple-700 text-white' : 'hover:bg-zinc-800 text-zinc-300' %> transition">
+
+          <span class="text-xl">🏢</span>
+
+          <span class="menu-text">
+            Employers
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-800 text-zinc-300 transition">
+
+          <span class="text-xl">🏭</span>
+
+          <span class="menu-text">
+            Companies
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-800 text-zinc-300 transition">
+
+          <span class="text-xl">💼</span>
+
+          <span class="menu-text">
+            Jobs
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-800 text-zinc-300 transition">
+
+          <span class="text-xl">📄</span>
+
+          <span class="menu-text">
+            Applications
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-800 text-zinc-300 transition">
+
+          <span class="text-xl">🎤</span>
+
+          <span class="menu-text">
+            Interviews
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-800 text-zinc-300 transition">
+
+          <span class="text-xl">🔔</span>
+
+          <span class="menu-text">
+            Notifications
+          </span>
+
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-800 text-zinc-300 transition">
+
+          <span class="text-xl">⚙️</span>
+
+          <span class="menu-text">
+            Settings
+          </span>
+
+        </a>
+      </li>
+
+      <li class="flex justify-end">
+        <a href="/admin/dashboard/logout" class="group flex items-center justify-end w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-[15rem] hover:rounded-lg active:translate-x-1 active:translate-y-1">
+
+          <div class="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
+            <svg class="w-4 h-4" viewBox="0 0 512 512" fill="white">
+              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
+            </svg>
+          </div>
+          <div class="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+            Logout
+          </div>
+
+        </a>
+      </li>
+
+    </ul>
+
+  </div>
+
+  <!-- Bottom Profile -->
+  <div class="border-t border-zinc-800 p-4">
+
+    <div class="flex items-center gap-3">
+
+      <img src="<%= admin.avatar || 'https://ui-avatars.com/api/?name=' + admin.name %>" class="w-12 h-12 rounded-full object-cover">
+
+      <div id="profileText">
+
+        <h4 class="text-white font-semibold">
+
+          <%= admin.name %>
+
+        </h4>
+
+        <p class="text-zinc-500 text-sm">
+
+          Administrator
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</aside>

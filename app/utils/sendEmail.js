@@ -37,7 +37,7 @@ const otpEmail = async (user) => {
   }
 };
 
-// Verified User/Employeer/Admin Email
+// Verified User/employer/Admin Email
 const userEmail = async (user) => {
   try {
     await transporter.sendMail({
@@ -75,7 +75,7 @@ const notificationEmail = async (user) => {
       html: notificationTemplate(
         user.candidateName,
         user.companyName,
-        user.employeerName,
+        user.employerName,
         user.message,
       ),
     });

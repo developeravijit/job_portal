@@ -4,6 +4,10 @@ const DbConnect = require("./app/config/db");
 const cors = require("cors");
 const router = require("./app/routes");
 const cookieParser = require("cookie-parser");
+const swaggerUi = require("swagger-ui-express");
+const swaggerOptions = require("./swagger.json");
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerDocument = swaggerJSDoc(swaggerOptions);
 
 require("./app/cron/deleteUser");
 
@@ -27,6 +31,8 @@ app.use(cookieParser());
 
 // Router
 app.use(router);
+
+app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const PORT = process.env.PORT || 4000;
 

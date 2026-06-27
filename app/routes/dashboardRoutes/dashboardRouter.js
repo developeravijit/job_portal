@@ -6,12 +6,12 @@ const permission = require("../../middleware/dashboardMiddleware/dashboardPermis
 const dashboard = express.Router();
 
 // User Register
-dashboard.get("/user/register", dashboardController.userRegisterPage);
-dashboard.post("/user/register", dashboardController.userRegister);
+dashboard.get("/candidate/register", dashboardController.userRegisterPage);
+dashboard.post("/candidate/register", dashboardController.userRegister);
 
-// Employeer Register
-dashboard.get("/employeer/register", dashboardController.employeerRegisterPage);
-dashboard.post("/employeer/register", dashboardController.employeerRegister);
+// employer Register
+dashboard.get("/employer/register", dashboardController.employerRegisterPage);
+dashboard.post("/employer/register", dashboardController.employerRegister);
 
 // Verify
 dashboard.get("/verify", dashboardController.verifyPage);
@@ -28,15 +28,5 @@ dashboard.get("/forgot-password", dashboardController.forgotPasswordPage);
 dashboard.post("/forgot-password", dashboardController.forgotPassword);
 dashboard.get("/reset-password/:token", dashboardController.resetPasswordPage);
 dashboard.post("/reset-password/:token", dashboardController.resetPassword);
-
-// User Home Page
-dashboard.get("/user/home", authCheck, dashboardController.userHomePage);
-
-// Employeer Home Page
-dashboard.get(
-  "/employeer/home",
-  authCheck,
-  dashboardController.employeerHomePage,
-);
 
 module.exports = dashboard;

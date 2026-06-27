@@ -9,7 +9,7 @@ const {
   jobSchema,
   notificationSchema,
 } = require("../../validation/companyValidation");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const {
   selectedEmail,
   rejectedEmail,
@@ -17,7 +17,102 @@ const {
 } = require("../../utils/sendEmail");
 const Notification = require("../../model/notification");
 
-class employeerController {
+class employerController {
+  // employer Home Page
+  async employerHomePage(req, res) {
+    try {
+      const user = await User.findById(req.user.id);
+
+      const totalJobs = await Job.countDocuments({
+        employerID: req.user.id,
+      });
+
+      const company = await Company.findOne(
+        { employerID: req.user.id },
+        { companyName: 1 },
+      ).lean();
+
+      const employerJobs = await Job.find(
+        { employerID: req.user.id },
+        { _id: 1 },
+      );
+
+      const jobIds = employerJobs.map((job) => job._id);
+
+      const totalApplicants = await Application.countDocuments({
+        jobID: { $in: jobIds },
+      });
+
+      const selectedCandidates = await Application.countDocuments({
+        jobID: { $in: jobIds },
+        status: "selected",
+      });
+
+      const reviewingCandidates = await Application.countDocuments({
+        jobID: { $in: jobIds },
+        status: "reviewing",
+      });
+
+      const recentApplicants = await Application.aggregate([
+        {
+          $match: {
+            jobID: { $in: jobIds },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "candidateID",
+            foreignField: "_id",
+            as: "candidate",
+          },
+        },
+        {
+          $unwind: "$candidate",
+        },
+        {
+          $lookup: {
+            from: "jobs",
+            localField: "jobID",
+            foreignField: "_id",
+            as: "job",
+          },
+        },
+        {
+          $unwind: "$job",
+        },
+        {
+          $project: {
+            candidateName: "$candidate.name",
+            jobTitle: "$job.title",
+            status: 1,
+            createdAt: 1,
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $limit: 5,
+        },
+      ]);
+
+      res.render("employerHome", {
+        user,
+        companyName: company?.companyName || "No Company Created",
+        totalJobs,
+        totalApplicants,
+        selectedCandidates,
+        reviewingCandidates,
+        recentApplicants,
+      });
+    } catch (error) {
+      return res.status(500).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
   // Create Company Page
   async createCompanyPage(req, res) {
     res.render("createCompany", {
@@ -57,32 +152,55 @@ class employeerController {
   // Show All Jobs Page
   async allJobs(req, res) {
     try {
-      const limit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 10;
+      const limit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 4;
       const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
 
-      req.query.limit = limit;
-      req.query.page = page;
+      const matchStage = {
+        employerID: new mongoose.Types.ObjectId(req.user.id),
+        status: true,
+      };
 
-      const [jobs, itemCount] = await Promise.all([
-        Job.find({ employeerID: req.user.id, status: true })
-          .limit(limit)
-          .skip(req.skip)
-          .lean(),
-        Job.countDocuments({
-          employeerID: req.user.id,
-          status: true,
-        }),
+      if (search) {
+        const regex = new RegExp(search, "i");
+
+        matchStage.$or = [
+          { title: regex },
+          { skills: regex },
+          { location: regex },
+          { description: regex },
+        ];
+      }
+
+      const result = await Job.aggregate([
+        {
+          $match: matchStage,
+        },
+        {
+          $facet: {
+            jobs: [
+              { $sort: { createdAt: -1 } },
+              { $skip: skip },
+              { $limit: limit },
+            ],
+            totalCount: [{ $count: "count" }],
+          },
+        },
       ]);
 
+      const jobs = result[0].jobs;
+      const itemCount = result[0].totalCount[0]?.count || 0;
       const pageCount = Math.max(1, Math.ceil(itemCount / limit));
 
       return res.render("allJobs", {
         jobs,
         pageCount,
         itemCount,
-        pages: paginate.getArrayPages(req)(3, pageCount, page),
+        pages: paginate.getArrayPages(req)(4, pageCount, page),
         currentPage: page,
         limit,
+        search,
       });
     } catch (error) {
       console.log(error.message);
@@ -125,7 +243,7 @@ class employeerController {
       const page = Number(req.query.page) || 1;
       const skip = (page - 1) * limit;
 
-      const employeerID = new mongoose.Types.ObjectId(req.user.id);
+      const employerID = new mongoose.Types.ObjectId(req.user.id);
 
       const [applications, totalData] = await Promise.all([
         Application.aggregate([
@@ -142,7 +260,7 @@ class employeerController {
           },
           {
             $match: {
-              "job.employeerID": employeerID,
+              "job.employerID": employerID,
             },
           },
           {
@@ -200,7 +318,7 @@ class employeerController {
           },
           {
             $match: {
-              "job.employeerID": employeerID,
+              "job.employerID": employerID,
             },
           },
           {
@@ -268,7 +386,7 @@ class employeerController {
   async deletedJobsPage(req, res) {
     try {
       const jobs = await Job.find({
-        employeerID: req.user.id,
+        employerID: req.user.id,
         status: false,
       }).lean();
 
@@ -305,7 +423,7 @@ class employeerController {
         { new: true, runValidators: true },
       );
 
-      return res.redirect("/employeer/deleted/jobs");
+      return res.redirect("/employer/dashboard/deleted/jobs");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -331,10 +449,12 @@ class employeerController {
       }
 
       const { companyName, website, industry } = value;
+      console.log(req.user);
+      console.log(req.user.id);
 
-      const employeerID = req.user.id;
+      const employerID = req.user.id;
 
-      const existingCompany = await Company.findOne({ employeerID });
+      const existingCompany = await Company.findOne({ employerID });
 
       if (existingCompany) {
         return res.render("createCompany", {
@@ -344,7 +464,7 @@ class employeerController {
       }
 
       const data = new Company({
-        employeerID,
+        employerID,
         companyName,
         website,
         industry,
@@ -352,7 +472,7 @@ class employeerController {
 
       await data.save();
 
-      return res.redirect("/employeer/myCompany");
+      return res.redirect("/employer/dashboard/myCompany");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -365,7 +485,7 @@ class employeerController {
   async showCompany(req, res) {
     try {
       const data = await Company.find({
-        employeerID: req.user.id,
+        employerID: req.user.id,
       });
 
       if (!data || data.length === 0) {
@@ -407,7 +527,7 @@ class employeerController {
         });
       }
 
-      return res.redirect("/employeer/myCompany");
+      return res.redirect("/employer/dashboard/myCompany");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -433,9 +553,9 @@ class employeerController {
       }
       const { title, description, skills, salary, location } = value;
 
-      const employeerID = req.user.id;
+      const employerID = req.user.id;
 
-      const company = await Company.findOne({ employeerID });
+      const company = await Company.findOne({ employerID });
 
       if (!company) {
         return res.render("createJob", {
@@ -445,7 +565,7 @@ class employeerController {
       }
 
       const existingJob = await Job.findOne({
-        employeerID,
+        employerID,
         title,
       });
 
@@ -457,7 +577,7 @@ class employeerController {
       }
 
       const data = new Job({
-        employeerID,
+        employerID,
         title,
         description,
         skills,
@@ -467,7 +587,7 @@ class employeerController {
 
       await data.save();
 
-      return res.redirect("/employeer/jobs");
+      return res.redirect("/employer/dashboard/jobs");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -519,7 +639,7 @@ class employeerController {
         });
       }
 
-      return res.redirect("/employeer/jobs");
+      return res.redirect("/employer/dashboard/jobs");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -549,7 +669,7 @@ class employeerController {
         { new: true, runValidators: true },
       );
 
-      return res.redirect("/employeer/jobs");
+      return res.redirect("/employer/dashboard/jobs");
     } catch (error) {
       console.log(error.message);
 
@@ -598,8 +718,8 @@ class employeerController {
         {
           $lookup: {
             from: "companies",
-            localField: "job.employeerID",
-            foreignField: "employeerID",
+            localField: "job.employerID",
+            foreignField: "employerID",
             as: "company",
           },
         },
@@ -617,7 +737,7 @@ class employeerController {
       ]);
 
       if (!applicationData.length) {
-        return res.redirect("/employeer/applicants");
+        return res.redirect("/employer/dashboard/applicants");
       }
 
       const emailData = applicationData[0];
@@ -630,7 +750,7 @@ class employeerController {
         await rejectedEmail(emailData);
       }
 
-      return res.redirect(redirectTo || "/employeer/applicants");
+      return res.redirect(redirectTo || "/employer/dashboard/applicants");
     } catch (error) {
       console.log(error.message);
 
@@ -683,7 +803,7 @@ class employeerController {
       const { subject, message } = value;
 
       const company = await Company.findOne({
-        employeerID: req.user.id,
+        employerID: req.user.id,
       });
 
       if (!user || !company) {
@@ -705,12 +825,12 @@ class employeerController {
         email: user.email,
         candidateName: user.name,
         companyName: company.companyName,
-        employeerName: req.user.name,
+        employerName: req.user.name,
         subject,
         message,
       });
 
-      return res.redirect("/employeer/interview");
+      return res.redirect("/employer/dashboard/applicants");
     } catch (error) {
       console.log(error.message);
 
@@ -721,4 +841,4 @@ class employeerController {
   }
 }
 
-module.exports = new employeerController();
+module.exports = new employerController();

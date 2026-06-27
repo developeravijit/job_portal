@@ -22,7 +22,7 @@
             Deleted Jobs
           </h1>
 
-          <a href="/employeer/jobs" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+          <a href="/employer/dashboard/jobs" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
 
             Active Jobs
 
@@ -62,13 +62,13 @@
 
             <div class="mt-4 flex gap-3">
 
-              <a href="/employeer/job/<%= job._id %>" class="bg-gray-600 text-white px-4 py-2 rounded-lg">
+              <a href="/employer/dashboard/job/<%= job._id %>" class="bg-gray-600 text-white px-4 py-2 rounded-lg">
 
                 View
 
               </a>
 
-              <form action="/employeer/restore-job/<%= job._id %>" method="POST">
+              <form action="/employer/dashboard/restore-job/<%= job._id %>" method="POST">
 
                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
 

@@ -29,7 +29,7 @@
         </div>
 
         <% if(company.length === 0) { %>
-        <a href="/employeer/create/company" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+        <a href="/employer/dashboard/create/company" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
           Create Company
         </a>
         <% } %>
@@ -70,7 +70,7 @@
                 Company Website
               </h3>
 
-              <a href="<%= company.website %>" target="_blank" class="text-blue-600 lowercase hover:underline text-lg">
+              <a href="<%= company.website %>" target="_blank" class="block mt-1 text-blue-600 hover:underline break-words">
 
                 <%= company.website %>
 
@@ -104,7 +104,7 @@
           <!-- Action Buttons -->
           <div class="mt-10 flex justify-end gap-4">
 
-            <a href="/employeer/edit/company/<%= company._id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg">
+            <a href="/employer/dashboard/edit/company/<%= company._id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg">
 
               Edit Company
 

@@ -35,8 +35,8 @@ class dashboardController {
         {
           $lookup: {
             from: "companies",
-            localField: "employeerID",
-            foreignField: "employeerID",
+            localField: "employerID",
+            foreignField: "employerID",
             as: "company",
           },
         },
@@ -61,8 +61,8 @@ class dashboardController {
               {
                 $lookup: {
                   from: "companies",
-                  localField: "employeerID",
-                  foreignField: "employeerID",
+                  localField: "employerID",
+                  foreignField: "employerID",
                   as: "company",
                 },
               },
@@ -103,9 +103,9 @@ class dashboardController {
     });
   }
 
-  // Employeer Register Page
-  async employeerRegisterPage(req, res) {
-    res.render("employeerRegister", {
+  // employer Register Page
+  async employerRegisterPage(req, res) {
+    res.render("employerRegister", {
       error: null,
       success: null,
       oldData: {},
@@ -168,197 +168,6 @@ class dashboardController {
     }
   }
 
-  // User Home Page
-  async userHomePage(req, res) {
-    try {
-      const user = await User.findById(req.user.id);
-
-      const search = req.query.search?.trim() || "";
-
-      const matchStage = {};
-
-      if (search) {
-        const regex = new RegExp(search, "i");
-
-        matchStage.$or = [
-          { title: regex },
-          { skills: regex },
-          { location: regex },
-          { description: regex },
-        ];
-      }
-
-      const jobs = await Job.aggregate([
-        {
-          $match: matchStage,
-        },
-
-        {
-          $sort: {
-            createdAt: -1,
-          },
-        },
-        {
-          $lookup: {
-            from: "companies",
-            localField: "employeerID",
-            foreignField: "employeerID",
-            as: "company",
-          },
-        },
-        {
-          $unwind: {
-            path: "$company",
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "employeerID",
-            foreignField: "_id",
-            as: "employeer",
-          },
-        },
-        {
-          $unwind: {
-            path: "$employeer",
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-      ]);
-
-      const appliedJobs = await Application.find(
-        { candidateID: req.user.id },
-        { jobID: 1 },
-      );
-
-      const appliedJobIDs = appliedJobs.map((item) => item.jobID.toString());
-
-      const savedJobs = await SaveJob.find(
-        { candidateID: req.user.id },
-        { jobID: 1 },
-      );
-
-      const savedJobIDs = savedJobs.map((item) => item.jobID.toString());
-
-      const jobsWithStatus = jobs.map((job) => ({
-        ...job,
-        isApplied: appliedJobIDs.includes(job._id.toString()),
-        isSaved: savedJobIDs.includes(job._id.toString()),
-      }));
-
-      const selectedJob =
-        jobsWithStatus.find((job) => job._id.toString() === req.query.jobId) ||
-        jobsWithStatus[0];
-
-      res.render("userHome", {
-        user,
-        jobs: jobsWithStatus,
-        selectedJob,
-        search,
-      });
-    } catch (error) {
-      return res.status(500).render("500", {
-        error: error.message,
-      });
-    }
-  }
-
-  // Employeer Home Page
-  async employeerHomePage(req, res) {
-    try {
-      const user = await User.findById(req.user.id);
-
-      const totalCompany = await Company.countDocuments({
-        employeerID: req.user.id,
-      });
-
-      const totalJobs = await Job.countDocuments({
-        employeerID: req.user.id,
-      });
-
-      const employerJobs = await Job.find(
-        { employeerID: req.user.id },
-        { _id: 1 },
-      );
-
-      const jobIds = employerJobs.map((job) => job._id);
-
-      const totalApplicants = await Application.countDocuments({
-        jobID: { $in: jobIds },
-      });
-
-      const selectedCandidates = await Application.countDocuments({
-        jobID: { $in: jobIds },
-        status: "selected",
-      });
-
-      const reviewingCandidates = await Application.countDocuments({
-        jobID: { $in: jobIds },
-        status: "reviewing",
-      });
-
-      const recentApplicants = await Application.aggregate([
-        {
-          $match: {
-            jobID: { $in: jobIds },
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "candidateID",
-            foreignField: "_id",
-            as: "candidate",
-          },
-        },
-        {
-          $unwind: "$candidate",
-        },
-        {
-          $lookup: {
-            from: "jobs",
-            localField: "jobID",
-            foreignField: "_id",
-            as: "job",
-          },
-        },
-        {
-          $unwind: "$job",
-        },
-        {
-          $project: {
-            candidateName: "$candidate.name",
-            jobTitle: "$job.title",
-            status: 1,
-            createdAt: 1,
-          },
-        },
-        {
-          $sort: { createdAt: -1 },
-        },
-        {
-          $limit: 5,
-        },
-      ]);
-
-      res.render("employeerHome", {
-        user,
-        totalCompany,
-        totalJobs,
-        totalApplicants,
-        selectedCandidates,
-        reviewingCandidates,
-        recentApplicants,
-      });
-    } catch (error) {
-      return res.status(500).render("500", {
-        error: error.message,
-      });
-    }
-  }
-
   // User Register
   async userRegister(req, res) {
     try {
@@ -372,6 +181,7 @@ class dashboardController {
         return res.render("userRegister", {
           error: error.details[0].message,
           oldData: req.body,
+          success: null,
         });
       }
 
@@ -426,8 +236,8 @@ class dashboardController {
     }
   }
 
-  // Employeer Register
-  async employeerRegister(req, res) {
+  // employer Register
+  async employerRegister(req, res) {
     try {
       const { error, value } = registerSchema.validate(req.body, {
         abortEarly: false,
@@ -436,7 +246,7 @@ class dashboardController {
       if (error) {
         const messages = error.details.map((item) => item.message);
 
-        return res.render("employeerRegister", {
+        return res.render("employerRegister", {
           error: error.details[0].message,
           oldData: req.body,
         });
@@ -444,12 +254,12 @@ class dashboardController {
 
       const { name, email, password, confirmPassword, phone } = value;
 
-      const existingEmployeer = await User.findOne({ email });
+      const existingemployer = await User.findOne({ email });
 
-      if (existingEmployeer) {
-        if (!existingEmployeer.isVerified) {
+      if (existingemployer) {
+        if (!existingemployer.isVerified) {
           return res.render("verify", {
-            email: existingEmployeer.email,
+            email: existingemployer.email,
             error: "User already exist kindly verify your account",
             success: null,
           });
@@ -459,7 +269,7 @@ class dashboardController {
           error: "User already exist",
           success: null,
           oldData: {
-            email: existingEmployeer.email,
+            email: existingemployer.email,
           },
         });
       }
@@ -472,7 +282,7 @@ class dashboardController {
         email,
         password: hashedPassword,
         phone,
-        role: "employeer",
+        role: "employer",
       });
 
       const data = await userData.save();
@@ -483,7 +293,7 @@ class dashboardController {
         email: data.email,
         role: data.role,
         error: null,
-        success: "Employeer created kindly verify your email",
+        success: "employer created kindly verify your email",
       });
     } catch (error) {
       console.log(error.message);
@@ -493,7 +303,7 @@ class dashboardController {
     }
   }
 
-  // Verify User/Employeer
+  // Verify User/employer
   async verifyUser(req, res) {
     try {
       const { error, value } = verifySchema.validate(req.body, {
@@ -552,7 +362,7 @@ class dashboardController {
         userID: data._id,
       });
 
-      return res.redirect("/dashboard/login");
+      return res.redirect("/job-portal/login");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -603,7 +413,7 @@ class dashboardController {
       return res.render("verify", {
         email,
         error: null,
-        success: "New otp sent to your email id",
+        success: "New otp sent successfully",
       });
     } catch (error) {
       console.log(error.message);
@@ -655,7 +465,7 @@ class dashboardController {
       data.resetPassword = resetPassToken;
       await data.save();
 
-      const resetPasswordLink = `${req.protocol}://${req.get("host")}/dashboard/reset-password/${resetPassToken}`;
+      const resetPasswordLink = `${req.protocol}://${req.get("host")}/job-portal/reset-password/${resetPassToken}`;
 
       await resetPasswordEmail(data, resetPasswordLink);
 
@@ -726,7 +536,7 @@ class dashboardController {
 
       await data.save();
 
-      return res.redirect("/dashboard/login");
+      return res.redirect("/job-portal/login");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -745,7 +555,7 @@ class dashboardController {
       if (error) {
         const messages = error.details.map((item) => item.message);
 
-        return res.render("adminRegister", {
+        return res.render("login", {
           error: error.details[0].message,
           oldData: req.body,
         });
@@ -766,8 +576,8 @@ class dashboardController {
       if (!data.isVerified) {
         return res.render("login", {
           error:
-            data.role === "employeer"
-              ? "Employeer not verified"
+            data.role === "employer"
+              ? "employer not verified"
               : "User not verified",
           success: null,
           oldData: req.body,
@@ -777,8 +587,8 @@ class dashboardController {
       if (!data.status) {
         return res.render("login", {
           error:
-            data.role === "employeer"
-              ? "Employeer not active"
+            data.role === "employer"
+              ? "employer not active"
               : "User not active",
           success: null,
           oldData: req.body,
@@ -815,11 +625,11 @@ class dashboardController {
       });
 
       if (data.role === "user") {
-        return res.redirect("/dashboard/user/home");
+        return res.redirect("/candidate/home");
       }
 
-      if (data.role === "employeer") {
-        return res.redirect("/dashboard/employeer/home");
+      if (data.role === "employer") {
+        return res.redirect("/employer/dashboard/home");
       }
     } catch (error) {
       console.log(error.message);
@@ -834,14 +644,20 @@ class dashboardController {
     try {
       const user = await User.findById(req.user.id);
 
-      if (user) {
-        user.refreshToken = null;
-        await user.save();
+      if (!user) {
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+
+        return res.redirect("/job-portal/login");
       }
+
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
 
-      return res.redirect("/dashboard/login");
+      user.refreshToken = null;
+      await user.save();
+
+      return res.redirect("/job-portal/login");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {

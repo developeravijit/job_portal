@@ -5,10 +5,18 @@ const permission = require("../../middleware/dashboardMiddleware/dashboardPermis
 const uploadResume = require("../../middleware/resumeUpload");
 const uploadImage = require("../../middleware/imageUpload,js");
 
-const candidate = express.Router();
+const candidateRoute = express.Router();
+
+// Home Page
+candidateRoute.get(
+  "/home",
+  authCheck,
+  permission("user"),
+  candidateController.userHomePage,
+);
 
 // Profile Page
-candidate.get(
+candidateRoute.get(
   "/profile",
   authCheck,
   permission("user"),
@@ -16,13 +24,13 @@ candidate.get(
 );
 
 // Profile Update
-candidate.get(
+candidateRoute.get(
   "/profile/update",
   authCheck,
   permission("user"),
   candidateController.updateProfilePage,
 );
-candidate.post(
+candidateRoute.post(
   "/profile/update",
   authCheck,
   permission("user"),
@@ -31,7 +39,7 @@ candidate.post(
 );
 
 // Apply Job
-candidate.post(
+candidateRoute.post(
   "/apply/job/:jobID",
   authCheck,
   permission("user"),
@@ -40,17 +48,17 @@ candidate.post(
 );
 
 // Save JOb
-candidate.post(
+candidateRoute.post(
   "/save-job/:jobID",
   authCheck,
   permission("user"),
   candidateController.saveJob,
 );
-candidate.get(
+candidateRoute.get(
   "/saved/jobs",
   authCheck,
   permission("user"),
   candidateController.saveJobPage,
 );
 
-module.exports = candidate;
+module.exports = candidateRoute;

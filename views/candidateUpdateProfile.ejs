@@ -36,6 +36,19 @@
       </div>
 
 
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+        <%= error %>
+      </div>
+      <% } %>
+
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+        <%= success %>
+      </div>
+      <% } %>
+
+
       <form action="/candidate/profile/update" method="POST" enctype="multipart/form-data">
 
         <div class="grid md:grid-cols-2 gap-6">
@@ -50,19 +63,15 @@
 
               <% if(user.avatar){ %>
 
-              <img src="<%= user.avatar %>" class="w-24 h-24 rounded-full object-cover border">
+              <img id="avatarPreview" src="<%= user.avatar %>" class="w-24 h-24 rounded-full object-cover border">
 
               <% } else { %>
 
-              <div class="w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center">
-
-                <i class="fa-solid fa-user text-3xl text-slate-500"></i>
-
-              </div>
+              <img id="avatarPreview" src="https://placehold.co/96x96/e2e8f0/64748b?text=User" class="w-24 h-24 rounded-full object-cover border">
 
               <% } %>
 
-              <input type="file" name="avatar" accept="image/*" class="border rounded-xl p-3">
+              <input type="file" id="avatar" name="avatar" accept="image/*" class="border rounded-xl p-3">
 
             </div>
 
@@ -151,6 +160,27 @@
     </div>
 
   </div>
+
+  <script>
+    const avatarInput = document.getElementById("avatar");
+    const avatarPreview = document.getElementById("avatarPreview");
+
+    avatarInput.addEventListener("change", function() {
+
+      const file = this.files[0];
+
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        avatarPreview.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+
+    });
+  </script>
 
 </body>
 

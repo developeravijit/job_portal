@@ -1,0 +1,59 @@
+{
+    "definition": {
+        "openapi": "3.0.0",
+        "info": {
+            "title": "MID_TERM_PROJECT(Job_Portal)",
+            "version": "1.0.0",
+            "description": "Job portal where candidates can save and apply for jobs, employers can view applicants and select them, and admins have full access.",
+            "contact": {
+                "name": "Avijit Roy"
+            }
+        },
+        "servers": [
+            {
+                "url": "http://localhost:4000",
+                "description": "Local Development Server"
+            },
+            {
+                "url": "https://job-portal-a942.onrender.com",
+                "description": "Production Server"
+            }
+        ],
+        "tags": [
+            {
+                "name": "Auth",
+                "description": "Authentication APIs"
+            },
+            {
+                "name": "Candidate",
+                "description": "Candidate APIs"
+            },
+            {
+                "name": "Employer",
+                "description": "Employer APIs"
+            },
+            {
+                "name": "Admin",
+                "description": "Admin APIs"
+            }
+        ],
+        "components": {
+            "securitySchemes": {
+                "bearerAuth": {
+                    "type": "http",
+                    "scheme": "bearer",
+                    "bearerFormat": "JWT"
+                }
+            }
+        },
+        "security": [
+            {
+                "bearerAuth": []
+            }
+        ]
+    },
+    "apis": [
+        "./app/routes/*.js",
+        "./app/routes/**/*.js"
+    ]
+}

@@ -43,7 +43,7 @@
 
         <% jobs.forEach(job => { %>
 
-        <a href="/dashboard/user/home?jobId=<%= job._id %>&search=<%= search || '' %>" class="inline-block w-full p-4 rounded-xl shadow mb-3 border transition
+        <a href="/candidate/home?jobId=<%= job._id %>&search=<%= search || '' %>" class="inline-block w-full p-4 rounded-xl shadow mb-3 border transition
  <%= selectedJob && selectedJob._id.toString() === job._id.toString()
  ? 'border-blue-600 bg-blue-50'
  : 'bg-white hover:border-blue-400'
@@ -93,7 +93,7 @@
 
           <div class="flex justify-between items-start">
 
-            <div>
+            <div class="flex-1 min-w-0">
 
               <h2 class="text-3xl font-bold text-slate-800">
                 <%= selectedJob.title %>
@@ -210,12 +210,12 @@
                 <div>
                   <p>
                     <strong>Name:</strong>
-                    <%= selectedJob.employeer?.name || "N/A" %>
+                    <%= selectedJob.employer?.name || "N/A" %>
                   </p>
 
                   <p>
                     <strong>Email:</strong>
-                    <%= selectedJob.employeer?.email || "N/A" %>
+                    <%= selectedJob.employer?.email || "N/A" %>
                   </p>
                 </div>
 

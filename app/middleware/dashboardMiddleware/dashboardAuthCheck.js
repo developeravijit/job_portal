@@ -70,7 +70,7 @@ const authCheck = async (req, res, next) => {
     const loginRegisterPaths = [
       "/login",
       "/user/register",
-      "/employeer/register",
+      "/employer/register",
       "/forgot-password",
     ];
 
@@ -82,11 +82,11 @@ const authCheck = async (req, res, next) => {
             const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
 
             if (decoded.role === "user") {
-              return res.redirect("/dashboard/user/home");
+              return res.redirect("/candidate/home");
             }
 
-            if (decoded.role === "employeer") {
-              return res.redirect("/dashboard/employeer/home");
+            if (decoded.role === "employer") {
+              return res.redirect("/employer/dashboard/home");
             }
           } catch (error) {
             // Access token invalid, continue to check refresh token
@@ -116,11 +116,11 @@ const authCheck = async (req, res, next) => {
               });
 
               if (user.role === "user") {
-                return res.redirect("/dashboard/user/home");
+                return res.redirect("/candidate/home");
               }
 
-              if (user.role === "employeer") {
-                return res.redirect("/dashboard/employeer/home");
+              if (user.role === "employer") {
+                return res.redirect("/employer/dashboard/home");
               }
             }
           } catch (error) {
@@ -149,7 +149,7 @@ const authCheck = async (req, res, next) => {
     }
 
     if (!refreshToken) {
-      return res.redirect("/dashboard/login");
+      return res.redirect("/job-portal/login");
     }
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
@@ -160,7 +160,7 @@ const authCheck = async (req, res, next) => {
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
 
-      return res.redirect("/dashboard/login");
+      return res.redirect("/job-portal/login");
     }
 
     const newAccessToken = generateAccessToken(user);
@@ -179,7 +179,7 @@ const authCheck = async (req, res, next) => {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 
-    return res.redirect("/dashboard/login");
+    return res.redirect("/job-portal/login");
   }
 };
 

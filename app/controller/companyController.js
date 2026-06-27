@@ -5,7 +5,11 @@ const Job = require("../model/job");
 const Notification = require("../model/notification");
 const User = require("../model/user");
 const httpCodes = require("../utils/httpCode");
-const { notificationEmail } = require("../utils/sendEmail");
+const {
+  notificationEmail,
+  selectedEmail,
+  rejectedEmail,
+} = require("../utils/sendEmail");
 const {
   companySchema,
   jobSchema,
@@ -13,6 +17,7 @@ const {
   notificationSchema,
 } = require("../validation/companyValidation");
 const mongoose = require("mongoose");
+const paginate = require("express-paginate");
 
 class companyController {
   // Create Company
@@ -29,9 +34,9 @@ class companyController {
 
       const { companyName, website, industry } = value;
 
-      const employeerID = req.user.id;
+      const employerID = req.user.id;
 
-      const existingCompany = await Company.findOne({ employeerID });
+      const existingCompany = await Company.findOne({ employerID });
 
       if (existingCompany) {
         return res.status(httpCodes.bad_request).json({
@@ -41,7 +46,7 @@ class companyController {
       }
 
       const companyData = new Company({
-        employeerID,
+        employerID,
         companyName,
         website,
         industry,
@@ -53,6 +58,63 @@ class companyController {
         success: true,
         message: "Company created successfully",
         data: data,
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  // Show Company
+  async showCompany(req, res) {
+    try {
+      const data = await Company.find({
+        employerID: req.user.id,
+      });
+
+      if (!data || data.length === 0) {
+        return res.status(httpCodes.bad_request).json({
+          success: false,
+          message: "No company created",
+        });
+      }
+
+      return res.status(httpCodes.ok).json({
+        success: true,
+        message: "Company Details",
+        data,
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  // Edit Company Details
+  async editCompany(req, res) {
+    try {
+      const { id } = req.params;
+
+      const updateData = await Company.findByIdAndUpdate(id, req.body, {
+        new: true,
+        runValidators: true,
+      });
+
+      if (!updateData) {
+        return res.status(httpCodes.not_found).json({
+          success: false,
+          message: "Company not found",
+        });
+      }
+
+      return res.status(httpCodes.ok).json({
+        success: true,
+        message: "Company data updated successfully",
+        data: updateData,
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({
@@ -76,10 +138,10 @@ class companyController {
 
       const { title, description, skills, salary, location } = value;
 
-      const employeerID = req.user.id;
+      const employerID = req.user.id;
 
       const existingJob = await Job.findOne({
-        employeerID,
+        employerID,
         title,
       });
 
@@ -91,7 +153,7 @@ class companyController {
       }
 
       const jobData = new Job({
-        employeerID,
+        employerID,
         title,
         description,
         skills,
@@ -105,6 +167,101 @@ class companyController {
         success: true,
         message: "Job created successfully",
         data: data,
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  // Show Jobs
+  async showJobs(req, res) {
+    try {
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
+
+      const matchStage = {
+        employerID: new mongoose.Types.ObjectId(req.user.id),
+        status: true,
+      };
+
+      if (search) {
+        const regex = new RegExp(search, "i");
+
+        matchStage.$or = [
+          { title: regex },
+          { skills: regex },
+          { location: regex },
+          { description: regex },
+        ];
+      }
+
+      const result = await Job.aggregate([
+        {
+          $match: matchStage,
+        },
+        {
+          $facet: {
+            jobs: [
+              { $sort: { createdAt: -1 } },
+              { $skip: skip },
+              { $limit: limit },
+            ],
+            totalCount: [{ $count: "count" }],
+          },
+        },
+      ]);
+
+      const jobs = result[0].jobs;
+      const itemCount = result[0].totalCount[0]?.count || 0;
+      const pageCount = Math.max(1, Math.ceil(itemCount / limit));
+
+      return res.status(httpCodes.ok).json({
+        success: true,
+        message: "All job data",
+        data: {
+          jobs,
+          pageCount,
+          itemCount,
+          pages: paginate.getArrayPages(req)(4, pageCount, page),
+          currentPage: page,
+          limit,
+          search,
+        },
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  // Edit Job
+  async editJob(req, res) {
+    try {
+      const { id } = req.params;
+
+      const updateData = await Job.findByIdAndUpdate(id, req.body, {
+        new: true,
+        runValidators: true,
+      });
+
+      if (!updateData) {
+        return res.status(httpCodes.not_found).json({
+          success: false,
+          message: "Job not found",
+        });
+      }
+
+      return res.status(httpCodes.ok).json({
+        success: true,
+        message: "Job data updated successfully",
+        data: updateData,
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({
@@ -169,8 +326,94 @@ class companyController {
     }
   }
 
-  // Create Notification
-  async createNotification(req, res) {
+  // Update Application Status
+  async applicationStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      await Application.findByIdAndUpdate(id, { status }, { new: true });
+
+      const applicationData = await Application.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(id),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "candidateID",
+            foreignField: "_id",
+            as: "candidate",
+          },
+        },
+        {
+          $unwind: "$candidate",
+        },
+        {
+          $lookup: {
+            from: "jobs",
+            localField: "jobID",
+            foreignField: "_id",
+            as: "job",
+          },
+        },
+        {
+          $unwind: "$job",
+        },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "job.employerID",
+            foreignField: "employerID",
+            as: "company",
+          },
+        },
+        {
+          $unwind: "$company",
+        },
+        {
+          $project: {
+            candidateName: "$candidate.name",
+            email: "$candidate.email",
+            companyName: "$company.companyName",
+            jobTitle: "$job.title",
+          },
+        },
+      ]);
+
+      if (!applicationData.length) {
+        return res.status(httpCodes.bad_request).json({
+          success: false,
+          message: "No application found",
+        });
+      }
+
+      const emailData = applicationData[0];
+
+      if (status === "selected") {
+        await selectedEmail(emailData);
+      }
+
+      if (status === "rejected") {
+        await rejectedEmail(emailData);
+      }
+
+      return res.status(httpCodes.ok).json({
+        success: true,
+        message: `Application ${status} successfully`,
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  // Send Notification
+  async sendNotification(req, res) {
     try {
       const { error, value } = notificationSchema.validate(req.body);
 
@@ -183,19 +426,37 @@ class companyController {
 
       const user = await User.findById(req.params.id);
 
-      const { subject, message } = value;
-
-      const company = await Company.findOne({
-        employeerID: req.user.id,
-      });
-
-      if (!user || !company) {
+      if (!user) {
         return res.status(httpCodes.not_found).json({
           success: false,
-          message: "Data not found",
+          message: "User not found",
         });
       }
 
+      const selectedCandidate = await Application.findOne({
+        candidateID: user._id,
+        status: "selected",
+      });
+
+      if (!selectedCandidate) {
+        return res.status(httpCodes.bad_request).json({
+          success: false,
+          message: "Only selected candidates can receive this notification",
+        });
+      }
+
+      const { subject, message } = value;
+
+      const company = await Company.findOne({
+        employerID: req.user.id,
+      });
+
+      if (!company) {
+        return res.status(httpCodes.not_found).json({
+          success: false,
+          message: "Company not found",
+        });
+      }
       const data = new Notification({
         userID: user._id,
         companyID: company._id,
@@ -205,180 +466,19 @@ class companyController {
 
       await data.save();
 
-      const emailData = await Notification.aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(data._id),
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "userID",
-            foreignField: "_id",
-            as: "candidate",
-          },
-        },
-        {
-          $unwind: "$candidate",
-        },
-        {
-          $lookup: {
-            from: "companies",
-            localField: "companyID",
-            foreignField: "_id",
-            as: "company",
-          },
-        },
-        {
-          $unwind: "$company",
-        },
-        {
-          $project: {
-            email: "$candidate.email",
-            candidateName: "$candidate.name",
-            companyName: "$company.companyName",
-            subject: 1,
-            message: 1,
-          },
-        },
-      ]);
-
-      if (emailData.length === 0) {
-        return res.status(httpCodes.not_found).json({
-          success: false,
-          message: "Candidate or company data not found",
-        });
-      }
-
-      await notificationEmail(emailData[0]);
+      await notificationEmail({
+        email: user.email,
+        candidateName: user.name,
+        companyName: company.companyName,
+        employerName: req.user.name,
+        subject,
+        message,
+      });
 
       return res.status(httpCodes.created).json({
         success: true,
         message: "Notification message sent to the candidate",
         data: data,
-      });
-    } catch (error) {
-      return res.status(httpCodes.server_error).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-
-  // Show All Employeers and Companies
-  async showAllCompanies(req, res) {
-    try {
-      const data = await Company.aggregate([
-        {
-          $lookup: {
-            from: "users",
-            localField: "employeerID",
-            foreignField: "_id",
-            as: "user",
-          },
-        },
-        {
-          $unwind: "$user",
-        },
-        {
-          $project: {
-            "user.password": 0,
-            "user.refreshToken": 0,
-            "user.resetPassword": 0,
-          },
-        },
-      ]);
-
-      return res.status(httpCodes.ok).json({
-        success: true,
-        message: "All Company Details",
-        data: data,
-      });
-    } catch (error) {
-      return res.status(httpCodes.server_error).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-
-  // Show company as per employeer
-  async showCompanyAsPerEmployeer(req, res) {
-    try {
-      const data = await Company.aggregate([
-        {
-          $match: {
-            employeerID: new mongoose.Types.ObjectId(req.user.id),
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "employeerID",
-            foreignField: "_id",
-            as: "user",
-          },
-        },
-        {
-          $unwind: "$user",
-        },
-        {
-          $project: {
-            "user.password": 0,
-            "user.refreshToken": 0,
-            "user.resetPassword": 0,
-          },
-        },
-      ]);
-
-      if (data.length === 0) {
-        return res.status(httpCodes.bad_request).json({
-          success: false,
-          message: "No company created for this employeer",
-        });
-      }
-
-      return res.status(httpCodes.ok).json({
-        success: true,
-        message: "Company Details As Per Employeer",
-        data: data,
-      });
-    } catch (error) {
-      return res.status(httpCodes.server_error).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-
-  // Employeers who do not created any companies
-  async noCompaniesEmployeer(req, res) {
-    try {
-      const data = await User.aggregate([
-        { $match: { role: "employeer" } },
-        {
-          $lookup: {
-            from: "companies",
-            localField: "_id",
-            foreignField: "employeerID",
-            as: "company",
-          },
-        },
-        {
-          $match: {
-            company: [],
-          },
-        },
-      ]);
-
-      return res.status(httpCodes.ok).json({
-        success: true,
-        message: "Employeers who do not have companies",
-        data: {
-          total: data.length,
-          data,
-        },
       });
     } catch (error) {
       return res.status(httpCodes.server_error).json({

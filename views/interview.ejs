@@ -73,7 +73,7 @@
 
             <% if(candidate.status === "selected"){ %>
 
-            <form action="/employeer/notification/<%= candidate.candidateID %>">
+            <form action="/employer/notification/<%= candidate.candidateID %>">
 
               <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg">
                 Send Interview Email
@@ -81,7 +81,7 @@
 
             </form>
 
-            <form action="/employeer/application/status/<%= candidate.applicationID %>" method="POST">
+            <form action="/employer/application/status/<%= candidate.applicationID %>" method="POST">
 
               <input type="hidden" name="status" value="rejected">
 
@@ -135,7 +135,7 @@
 
         <% } else { %>
 
-        <a href="/employeer/interviews?page=<%= i %>" class="px-4 py-2 bg-white border rounded">
+        <a href="/employer/interviews?page=<%= i %>" class="px-4 py-2 bg-white border rounded">
 
           <%= i %>
 

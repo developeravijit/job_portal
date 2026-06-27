@@ -3,10 +3,13 @@ const Joi = require("joi");
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+const alphabetRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
 const registerSchema = Joi.object({
-  name: Joi.string().min(3).max(30).required().messages({
+  name: Joi.string().min(3).max(30).pattern(alphabetRegex).required().messages({
     "string.min": "Name must be at least 3 characters",
     "string.max": "Name cannot exceed 30 characters",
+    "string.pattern.base": "Name cannot contain numbers or special characters",
     "any.required": "Name is required",
   }),
 
@@ -37,7 +40,7 @@ const registerSchema = Joi.object({
     }),
 
   role: Joi.string()
-    .valid("user", "employeer", "admin")
+    .valid("user", "employer", "admin")
     .default("user")
     .messages({
       "any.only": "Role must their",

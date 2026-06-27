@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4c1d95;
+      border-radius: 20px;
+    }
+
+    body {
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="bg-black">
+
+  <div class="flex h-screen">
+
+    <!-- Sidebar -->
+    <%- include("layout/adminNavbar.ejs") %>
+
+    <!-- Main Area -->
+    <div class="flex-1 bg-zinc-950">
+      <!-- ===========================
+        Welcome Section
+        ============================ -->
+      <div class="p-8">
+
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 p-8 shadow-2xl">
+
+          <div class="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+          <div class="absolute -bottom-10 -left-10 w-60 h-60 bg-black/20 rounded-full blur-3xl"></div>
+
+          <div class="relative z-10 flex justify-between items-center">
+
+            <div>
+
+              <h1 class="text-4xl font-bold text-white">
+                Welcome Back,
+                <span class="text-purple-200">
+                  <%= admin.name %>
+                </span>
+              </h1>
+
+              <p class="text-purple-100 mt-3 text-lg">
+                Manage employers, candidates, companies and monitor your Job
+                Portal from one place.
+              </p>
+
+              <div class="flex gap-3 mt-6">
+
+                <span class="px-4 py-2 rounded-full bg-white/20 text-white text-sm">
+                  Administrator
+                </span>
+
+                <span class="px-4 py-2 rounded-full bg-green-500/20 text-green-200 text-sm">
+                  ● System Online
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="hidden xl:block">
+
+              <div class="w-44 h-44 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
+
+                <span class="text-7xl">
+                  👨🏻‍💼
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===========================
+      Statistics Cards
+        ============================ -->
+
+      <div class="px-8 pb-8">
+
+        <div class="grid grid-cols-4 gap-6">
+
+          <!-- Users -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-purple-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between items-center">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Users
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.totalUsers %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-purple-600/20 flex items-center justify-center text-3xl">
+
+                👤
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Employers -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-blue-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Employers
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.totalEmployers %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-blue-600/20 flex items-center justify-center text-3xl">
+
+                🏢
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Companies -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-pink-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Companies
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.totalCompanies %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-pink-600/20 flex items-center justify-center text-3xl">
+
+                🏭
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Jobs -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-yellow-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Jobs
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.totalJobs %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-3xl">
+
+                💼
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Applications -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-green-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Applications
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.totalApplications %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center text-3xl">
+
+                📄
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Interviews -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-red-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Interviews
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.totalInterviews %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center text-3xl">
+
+                🎤
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Active Jobs -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-cyan-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Active Jobs
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.activeJobs %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-3xl">
+
+                🚀
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Notifications -->
+
+          <div class="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 hover:border-orange-500 transition duration-300 hover:-translate-y-1">
+
+            <div class="flex justify-between">
+
+              <div>
+
+                <p class="text-zinc-400 text-sm uppercase">
+                  Unread Notifications
+                </p>
+
+                <h2 class="text-4xl font-bold text-white mt-2">
+
+                  <%= dashboard.unreadNotifications %>
+
+                </h2>
+
+              </div>
+
+              <div class="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center text-3xl">
+
+                🔔
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let open = true;
+
+    function toggleSidebar() {
+
+      const sidebar = document.getElementById("sidebar");
+
+      const texts = document.querySelectorAll(".menu-text");
+
+      const profile = document.getElementById("profileText");
+
+      const logo = document.getElementById("logoText");
+
+      if (open) {
+
+        sidebar.classList.remove("w-72");
+        sidebar.classList.add("w-24");
+
+        texts.forEach(item => item.classList.add("hidden"));
+
+        profile.classList.add("hidden");
+
+        logo.classList.add("hidden");
+
+      } else {
+
+        sidebar.classList.remove("w-24");
+        sidebar.classList.add("w-72");
+
+        texts.forEach(item => item.classList.remove("hidden"));
+
+        profile.classList.remove("hidden");
+
+        logo.classList.remove("hidden");
+
+      }
+
+      open = !open;
+
+    }
+  </script>
+
+</body>
+
+</html>

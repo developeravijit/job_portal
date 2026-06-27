@@ -305,7 +305,7 @@ const resetPasswordTemplate = (name, resetLink) => {
 const notificationTemplate = (
   candidateName,
   companyName,
-  employeerName,
+  employerName,
   message,
 ) => {
   return `
@@ -346,7 +346,7 @@ const notificationTemplate = (
       line-height:1.7;
     ">
       Regards,<br>
-      <strong style="text-transform: capitalize">${employeerName}</strong><br>
+      <strong style="text-transform: capitalize">${employerName}</strong><br>
       ${companyName}
     </p>
 

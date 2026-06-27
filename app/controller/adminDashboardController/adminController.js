@@ -1,16 +1,20 @@
 const Otp = require("../../model/otp");
 const User = require("../../model/user");
+const {
+  adminAccessToken,
+  adminRefreshToken,
+} = require("../../utils/adminToken");
 const httpCodes = require("../../utils/httpCode");
 const {
   userEmail,
   otpEmail,
   resetPasswordEmail,
 } = require("../../utils/sendEmail");
-const { resetPasswordToken } = require("../../utils/token");
 const {
   registerSchema,
   verifySchema,
   newPasswordSchema,
+  loginSchema,
 } = require("../../validation/userValidation");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -143,6 +147,75 @@ class adminController {
         error: null,
         success: "Admin register successfully",
       });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Admin Login
+  async login(req, res) {
+    try {
+      const { error, value } = loginSchema.validate(req.body, {
+        abortEarly: false,
+      });
+
+      if (error) {
+        const messages = error.details.map((item) => item.message);
+
+        return res.render("adminLogin", {
+          error: error.details[0].message,
+          oldData: req.body,
+        });
+      }
+
+      const { email, password } = value;
+
+      const data = await User.findOne({
+        email,
+        role: "admin",
+      });
+
+      if (!data) {
+        return res.render("adminLogin", {
+          error: "Invalid email id",
+          success: null,
+          oldData: req.body,
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, data.password);
+
+      if (!isMatch) {
+        return res.render("adminLogin", {
+          error: "Invalid Password",
+          success: null,
+          oldData: req.body,
+        });
+      }
+
+      const accessToken = adminAccessToken(data);
+      const refreshToken = adminRefreshToken(data);
+
+      data.refreshToken = refreshToken;
+
+      await data.save();
+
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 30 * 60 * 1000,
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.redirect("/admin/dashboard/home");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -306,12 +379,12 @@ class adminController {
         });
       }
 
-      const resetPassToken = resetPasswordToken(data);
+      const resetPassToken = adminResetPasswordToken(data);
 
       data.resetPassword = resetPassToken;
       await data.save();
 
-      const resetPasswordLink = `${req.protocol}://${req.get("host")}/admin/reset-password/${resetPassToken}`;
+      const resetPasswordLink = `${req.protocol}://${req.get("host")}/admin/dashboard/reset-password/${resetPassToken}`;
 
       await resetPasswordEmail(data, resetPasswordLink);
 
@@ -382,7 +455,7 @@ class adminController {
 
       await data.save();
 
-      return res.redirect("/admin/login-page");
+      return res.redirect("/admin/dashboard/login");
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -391,7 +464,418 @@ class adminController {
     }
   }
 
-  
+  // Logout
+  async logout(req, res) {
+    try {
+      const data = await User.findById(req.user.id);
+
+      if (!data) {
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+        return res.redirect("/admin/dashboard/login");
+      }
+
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
+      data.refreshToken = null;
+      await data.save();
+      return res.redirect("/admin/dashboard/login");
+    } catch (error) {
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Admin Home Page
+  async homePage(req, res) {
+    try {
+      const admin = await User.findById(req.user.id);
+
+      if (!admin) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "Admin not found",
+        });
+      }
+      const [dashboardData] = await User.aggregate([
+        {
+          $facet: {
+            totalUsers: [
+              {
+                $match: {
+                  role: "user",
+                },
+              },
+              {
+                $count: "count",
+              },
+            ],
+
+            totalEmployers: [
+              {
+                $match: {
+                  role: "employer",
+                },
+              },
+              {
+                $count: "count",
+              },
+            ],
+
+            totalAdmins: [
+              {
+                $match: {
+                  role: "admin",
+                },
+              },
+              {
+                $count: "count",
+              },
+            ],
+
+            totalCompanies: [
+              {
+                $lookup: {
+                  from: "companies",
+                  pipeline: [
+                    {
+                      $count: "count",
+                    },
+                  ],
+                  as: "companies",
+                },
+              },
+              {
+                $project: {
+                  count: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: ["$companies.count", 0],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+              {
+                $limit: 1,
+              },
+            ],
+
+            totalJobs: [
+              {
+                $lookup: {
+                  from: "jobs",
+                  pipeline: [
+                    {
+                      $count: "count",
+                    },
+                  ],
+                  as: "jobs",
+                },
+              },
+              {
+                $project: {
+                  count: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: ["$jobs.count", 0],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+              {
+                $limit: 1,
+              },
+            ],
+
+            activeJobs: [
+              {
+                $lookup: {
+                  from: "jobs",
+                  pipeline: [
+                    {
+                      $match: {
+                        status: true,
+                      },
+                    },
+                    {
+                      $count: "count",
+                    },
+                  ],
+                  as: "jobs",
+                },
+              },
+              {
+                $project: {
+                  count: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: ["$jobs.count", 0],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+              {
+                $limit: 1,
+              },
+            ],
+
+            totalApplications: [
+              {
+                $lookup: {
+                  from: "applications",
+                  pipeline: [
+                    {
+                      $count: "count",
+                    },
+                  ],
+                  as: "applications",
+                },
+              },
+              {
+                $project: {
+                  count: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: ["$applications.count", 0],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+              {
+                $limit: 1,
+              },
+            ],
+
+            totalInterviews: [
+              {
+                $lookup: {
+                  from: "interviews",
+                  pipeline: [
+                    {
+                      $count: "count",
+                    },
+                  ],
+                  as: "interviews",
+                },
+              },
+              {
+                $project: {
+                  count: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: ["$interviews.count", 0],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+              {
+                $limit: 1,
+              },
+            ],
+
+            unreadNotifications: [
+              {
+                $lookup: {
+                  from: "notifications",
+                  pipeline: [
+                    {
+                      $match: {
+                        isRead: false,
+                      },
+                    },
+                    {
+                      $count: "count",
+                    },
+                  ],
+                  as: "notifications",
+                },
+              },
+              {
+                $project: {
+                  count: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: ["$notifications.count", 0],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+              {
+                $limit: 1,
+              },
+            ],
+          },
+        },
+      ]);
+
+      const dashboard = {
+        totalUsers: dashboardData.totalUsers[0]?.count || 0,
+        totalEmployers: dashboardData.totalEmployers[0]?.count || 0,
+        totalAdmins: dashboardData.totalAdmins[0]?.count || 0,
+        totalCompanies: dashboardData.totalCompanies[0]?.count || 0,
+        totalJobs: dashboardData.totalJobs[0]?.count || 0,
+        activeJobs: dashboardData.activeJobs[0]?.count || 0,
+        totalApplications: dashboardData.totalApplications[0]?.count || 0,
+        totalInterviews: dashboardData.totalInterviews[0]?.count || 0,
+        unreadNotifications: dashboardData.unreadNotifications[0]?.count || 0,
+      };
+
+      return res.render("adminHome", {
+        admin,
+        dashboard,
+        activePage: "dashboard",
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // All Candidates
+  async candidates(req, res) {
+    try {
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
+
+      const admin = await User.findById(req.user.id);
+
+      const match = { role: "user" };
+
+      if (search) {
+        match.$or = [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            email: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
+      }
+
+      const totalCandidates = await User.countDocuments(match);
+
+      const candidates = await User.aggregate([
+        {
+          $match: match,
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.ceil(totalCandidates / limit);
+
+      return res.render("allCandidate", {
+        admin,
+        candidates,
+        totalCandidates,
+        currentPage: page,
+        totalPages,
+        search,
+        activePage: "candidates",
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // All Employers
+  async employers(req, res) {
+    try {
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
+
+      const admin = await User.findById(req.user.id);
+
+      const match = { role: "employer" };
+
+      if (search) {
+        match.$or = [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            email: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
+      }
+
+      const totalemployers = await User.countDocuments(match);
+
+      const employers = await User.aggregate([
+        {
+          $match: match,
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.ceil(totalemployers / limit);
+
+      return res.render("allemployers", {
+        admin,
+        employers,
+        totalemployers,
+        currentPage: page,
+        totalPages,
+        search,
+        activePage: "employers",
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
 }
 
 module.exports = new adminController();

@@ -28,65 +28,65 @@
       </div>
 
       <!-- Statistics -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
+      <div class="space-y-5 mb-8 text-center">
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <!-- First Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-          <p class="text-slate-500 text-sm">
-            Companies
-          </p>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <p class="text-slate-500 text-sm">
+              Company
+            </p>
 
-          <h2 class="text-3xl font-bold mt-2">
-            <%= totalCompany %>
-          </h2>
+            <h2 class="text-2xl font-bold mt-2 break-words uppercase">
+              <%= companyName %>
+            </h2>
+          </div>
 
-        </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <p class="text-slate-500 text-sm">
+              Jobs Posted
+            </p>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+            <h2 class="text-3xl font-bold mt-2">
+              <%= totalJobs %>
+            </h2>
+          </div>
 
-          <p class="text-slate-500 text-sm">
-            Jobs Posted
-          </p>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <p class="text-slate-500 text-sm">
+              Applicants
+            </p>
 
-          <h2 class="text-3xl font-bold mt-2">
-            <%= totalJobs %>
-          </h2>
-
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow">
-
-          <p class="text-slate-500 text-sm">
-            Applicants
-          </p>
-
-          <h2 class="text-3xl font-bold mt-2">
-            <%= totalApplicants %>
-          </h2>
-
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow">
-
-          <p class="text-slate-500 text-sm">
-            Selected
-          </p>
-
-          <h2 class="text-3xl font-bold text-green-600 mt-2">
-            <%= selectedCandidates %>
-          </h2>
+            <h2 class="text-3xl font-bold mt-2">
+              <%= totalApplicants %>
+            </h2>
+          </div>
 
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <!-- Second Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-          <p class="text-slate-500 text-sm">
-            Reviewing
-          </p>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <p class="text-slate-500 text-sm">
+              Selected
+            </p>
 
-          <h2 class="text-3xl font-bold text-yellow-500 mt-2">
-            <%= reviewingCandidates %>
-          </h2>
+            <h2 class="text-3xl font-bold text-green-600 mt-2">
+              <%= selectedCandidates %>
+            </h2>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow">
+            <p class="text-slate-500 text-sm">
+              Reviewing
+            </p>
+
+            <h2 class="text-3xl font-bold text-yellow-500 mt-2">
+              <%= reviewingCandidates %>
+            </h2>
+          </div>
 
         </div>
 
@@ -101,25 +101,25 @@
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 
-          <a href="/employeer/create/job" class="bg-blue-600 hover:bg-blue-700 text-white text-center py-4 rounded-xl font-medium">
+          <a href="/employer/dashboard/create/job" class="bg-blue-600 hover:bg-blue-700 text-white text-center py-4 rounded-xl font-medium">
 
             Create Job
 
           </a>
 
-          <a href="/employeer/applicants" class="bg-green-600 hover:bg-green-700 text-white text-center py-4 rounded-xl font-medium">
+          <a href="/employer/dashboard/applicants" class="bg-green-600 hover:bg-green-700 text-white text-center py-4 rounded-xl font-medium">
 
             Applicants
 
           </a>
 
-          <a href="/employeer/jobs" class="bg-purple-600 hover:bg-purple-700 text-white text-center py-4 rounded-xl font-medium">
+          <a href="/employer/dashboard/jobs" class="bg-purple-600 hover:bg-purple-700 text-white text-center py-4 rounded-xl font-medium">
 
             All Jobs
 
           </a>
 
-          <a href="/employeer/myCompany" class="bg-orange-500 hover:bg-orange-600 text-white text-center py-4 rounded-xl font-medium">
+          <a href="/employer/dashboard/myCompany" class="bg-orange-500 hover:bg-orange-600 text-white text-center py-4 rounded-xl font-medium">
 
             Company Profile
 
@@ -138,7 +138,7 @@
             Recent Applicants
           </h2>
 
-          <a href="/employeer/applicants" class="text-blue-600 font-medium">
+          <a href="/employer/dashboard/applicants" class="text-blue-600 font-medium">
 
             View All
 

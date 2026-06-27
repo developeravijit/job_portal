@@ -8,6 +8,103 @@ const paginate = require("express-paginate");
 const User = require("../../model/user");
 
 class candidateController {
+  // Candidate Home Page
+  async userHomePage(req, res) {
+    try {
+      const user = await User.findById(req.user.id);
+
+      const search = req.query.search?.trim() || "";
+
+      const matchStage = {};
+
+      if (search) {
+        const regex = new RegExp(search, "i");
+
+        matchStage.$or = [
+          { title: regex },
+          { skills: regex },
+          { location: regex },
+          { description: regex },
+        ];
+      }
+
+      const jobs = await Job.aggregate([
+        {
+          $match: matchStage,
+        },
+
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "employerID",
+            foreignField: "employerID",
+            as: "company",
+          },
+        },
+        {
+          $unwind: {
+            path: "$company",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "employerID",
+            foreignField: "_id",
+            as: "employer",
+          },
+        },
+        {
+          $unwind: {
+            path: "$employer",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ]);
+
+      const appliedJobs = await Application.find(
+        { candidateID: req.user.id },
+        { jobID: 1 },
+      );
+
+      const appliedJobIDs = appliedJobs.map((item) => item.jobID.toString());
+
+      const savedJobs = await SaveJob.find(
+        { candidateID: req.user.id },
+        { jobID: 1 },
+      );
+
+      const savedJobIDs = savedJobs.map((item) => item.jobID.toString());
+
+      const jobsWithStatus = jobs.map((job) => ({
+        ...job,
+        isApplied: appliedJobIDs.includes(job._id.toString()),
+        isSaved: savedJobIDs.includes(job._id.toString()),
+      }));
+
+      const selectedJob =
+        jobsWithStatus.find((job) => job._id.toString() === req.query.jobId) ||
+        jobsWithStatus[0];
+
+      res.render("userHome", {
+        user,
+        jobs: jobsWithStatus,
+        selectedJob,
+        search,
+      });
+    } catch (error) {
+      return res.status(500).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
   // Update Candidate Profile Page
   async profilePage(req, res) {
     try {
@@ -31,6 +128,8 @@ class candidateController {
 
       res.render("candidateUpdateProfile", {
         user,
+        error: null,
+        success: null,
       });
     } catch (error) {
       console.log(error.message);
@@ -60,6 +159,18 @@ class candidateController {
       }
 
       const { name, phone } = req.body;
+
+      const alphabetRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+      if (!alphabetRegex.test(name.trim())) {
+        fileCleaner(req.file);
+
+        return res.render("candidateUpdateProfile", {
+          user,
+          error: "Name cannot contain numbers or special characters",
+          success: null,
+        });
+      }
 
       user.name = name;
       user.phone = phone;
@@ -115,15 +226,15 @@ class candidateController {
         {
           $lookup: {
             from: "users",
-            localField: "job.employeerID",
+            localField: "job.employerID",
             foreignField: "_id",
-            as: "employeer",
+            as: "employer",
           },
         },
 
         {
           $unwind: {
-            path: "$employeer",
+            path: "$employer",
             preserveNullAndEmptyArrays: true,
           },
         },
@@ -139,7 +250,7 @@ class candidateController {
             location: "$job.location",
             skills: "$job.skills",
 
-            employeerName: "$employeer.name",
+            employerName: "$employer.name",
           },
         },
 
@@ -211,7 +322,7 @@ class candidateController {
 
       await data.save();
 
-      return res.redirect(`/dashboard/user/home?jobId=${jobID}`);
+      return res.redirect(`/candidate/home?jobId=${jobID}`);
     } catch (error) {
       console.log(error.message);
       return res.status(httpCodes.server_error).render("500", {
@@ -250,7 +361,7 @@ class candidateController {
 
       await data.save();
 
-      return res.redirect(`/dashboard/user/home?jobId=${jobID}`);
+      return res.redirect(`/candidate/home?jobId=${jobID}`);
     } catch (error) {
       console.log(error.message);
 
