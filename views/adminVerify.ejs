@@ -53,7 +53,7 @@
 
     <form action="/admin/dashboard/verify" method="POST" class="space-y-5">
 
-      <input type="hidden" name="email" value="<%= email %>">
+      <input type="hidden" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>">
 
       <!-- Verification Code -->
       <div>
@@ -73,7 +73,7 @@
 
     <!-- Resend -->
     <div class="text-center mt-5">
-      <form action="/admin/dashboard/resend-otp" method="post">
+      <form action="/admin/dashboard/verify" method="post">
         <input type="hidden" name="email" value="<%= email %>">
 
         <button type="submit" class="text-sm text-purple-400 hover:text-purple-300">

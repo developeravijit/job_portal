@@ -31,6 +31,11 @@ admin.get("/home", adminAuthCheck, adminController.homePage);
 
 // All Candidates
 admin.get("/candidates", adminAuthCheck, adminController.candidates);
+
+// All Employers
 admin.get("/employers", adminAuthCheck, adminController.employers);
+
+// All Companies
+admin.get("/companies", adminAuthCheck, adminController.companies);
 
 module.exports = admin;

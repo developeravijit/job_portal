@@ -1,3 +1,4 @@
+const Company = require("../../model/company");
 const Otp = require("../../model/otp");
 const User = require("../../model/user");
 const {
@@ -272,6 +273,18 @@ class adminController {
         return res.render("adminVerify", {
           email,
           error: "Invalid OTP",
+          success: null,
+        });
+      }
+
+      const tenMinutes = 10 * 60 * 1000;
+
+      if (Date.now() - verifyAdmin.createdAt.getTime() > tenMinutes) {
+        await Otp.deleteOne({ _id: verifyAdmin._id });
+
+        return res.render("adminVerify", {
+          email,
+          error: "OTP has expired. Please resend OTP.",
           success: null,
         });
       }
@@ -869,6 +882,113 @@ class adminController {
         totalPages,
         search,
         activePage: "employers",
+      });
+    } catch (error) {
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // All Companies
+  async companies(req, res) {
+    try {
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
+
+      const admin = await User.findById(req.user.id);
+
+      const match = {};
+
+      if (search) {
+        match.$or = [
+          {
+            companyName: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            industry: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
+      }
+
+      const totalCompanies = await Company.countDocuments(match);
+
+      const companies = await Company.aggregate([
+        {
+          $match: match,
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "employerID",
+            foreignField: "_id",
+            as: "employer",
+          },
+        },
+        {
+          $unwind: {
+            path: "$employer",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "jobs",
+            localField: "_id",
+            foreignField: "companyID",
+            as: "jobs",
+          },
+        },
+        {
+          $addFields: {
+            totalJobs: {
+              $size: "$jobs",
+            },
+          },
+        },
+        {
+          $project: {
+            companyName: 1,
+            website: 1,
+            industry: 1,
+            createdAt: 1,
+            totalJobs: 1,
+            employerName: "$employer.name",
+            employerEmail: "$employer.email",
+            employerStatus: "$employer.status",
+          },
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.ceil(totalCompanies / limit);
+
+      return res.render("companies", {
+        admin,
+        companies,
+        totalCompanies,
+        currentPage: page,
+        totalPages,
+        search,
+        activePage: "companies",
       });
     } catch (error) {
       return res.status(httpCodes.server_error).render("500", {
