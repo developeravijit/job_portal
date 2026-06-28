@@ -884,6 +884,8 @@ class adminController {
         activePage: "employers",
       });
     } catch (error) {
+      console.log(error.message);
+
       return res.status(httpCodes.server_error).render("500", {
         error: error.message,
       });
