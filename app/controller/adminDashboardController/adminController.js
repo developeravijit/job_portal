@@ -874,7 +874,7 @@ class adminController {
 
       const totalPages = Math.ceil(totalemployers / limit);
 
-      return res.render("allemployers", {
+      return res.render("allEmployers", {
         admin,
         employers,
         totalemployers,
