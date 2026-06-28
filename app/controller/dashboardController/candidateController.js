@@ -6,6 +6,7 @@ const fileCleaner = require("../../utils/fileCleaner");
 const SaveJob = require("../../model/saveJob");
 const paginate = require("express-paginate");
 const User = require("../../model/user");
+const cloudinary = require("../../config/cloudinary");
 
 class candidateController {
   // Candidate Home Page
@@ -176,6 +177,9 @@ class candidateController {
       user.phone = phone;
 
       if (req.file) {
+        if (user.public_id) {
+          await cloudinary.uploader.destroy(user.public_id);
+        }
         user.avatar = req.file.path;
         user.public_id = req.file.filename;
       }

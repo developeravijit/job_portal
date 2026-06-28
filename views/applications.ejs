@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Applications</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #7c3aed;
+      border-radius: 20px;
+    }
+
+    body {
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="bg-zinc-950">
+
+  <div class="flex h-screen">
+
+    <%- include("layout/adminNavbar.ejs") %>
+
+    <main class="flex-1 overflow-y-auto p-8">
+
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8">
+
+        <div>
+          <h1 class="text-4xl font-bold text-white">
+            Applications
+          </h1>
+
+          <p class="text-zinc-400 mt-2">
+            Manage all job applications.
+          </p>
+        </div>
+
+        <div class="bg-purple-700 px-6 py-3 rounded-xl">
+          <p class="text-white font-semibold">
+            Total Applications :
+            <%= totalApplications %>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Search -->
+      <div class="mb-8">
+
+        <form action="/admin/dashboard/applications" method="GET" class="flex gap-4">
+
+          <input type="text" name="search" value="<%= search || '' %>" placeholder="Search by candidate or job..." class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 text-white outline-none">
+
+          <button class="bg-purple-700 hover:bg-purple-800 text-white px-8 rounded-xl">
+            Search
+          </button>
+
+        </form>
+
+      </div>
+
+      <% if(applications.length > 0){ %>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+
+        <% applications.forEach(application => { %>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-purple-700 duration-300">
+
+          <div class="flex justify-between items-start">
+
+            <div>
+              <h2 class="text-2xl font-bold text-white">
+                <%= application.candidateName %>
+              </h2>
+
+              <p class="text-zinc-400 text-sm mt-1">
+                <%= application.candidateEmail %>
+              </p>
+            </div>
+
+            <% if(application.status === "submitted"){ %>
+
+            <span class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full text-xs">
+              Submitted
+            </span>
+
+            <% } else if(application.status === "reviewing"){ %>
+
+            <span class="bg-yellow-600/20 text-yellow-300 px-3 py-1 rounded-full text-xs">
+              Reviewing
+            </span>
+
+            <% } else if(application.status === "selected"){ %>
+
+            <span class="bg-green-600/20 text-green-300 px-3 py-1 rounded-full text-xs">
+              Selected
+            </span>
+
+            <% } else if(application.status === "rejected"){ %>
+
+            <span class="bg-red-600/20 text-red-300 px-3 py-1 rounded-full text-xs">
+              Rejected
+            </span>
+
+            <% } %>
+
+          </div>
+
+          <div class="border-t border-zinc-800 my-5"></div>
+
+          <div class="space-y-4">
+
+            <div class="flex justify-between">
+              <span class="text-zinc-500">
+                Job
+              </span>
+
+              <span class="text-white">
+                <%= application.jobTitle %>
+              </span>
+            </div>
+
+            <div class="flex justify-between">
+              <span class="text-zinc-500">
+                Company
+              </span>
+
+              <span class="text-white">
+                <%= application.companyName || "N/A" %>
+              </span>
+            </div>
+
+            <div class="flex justify-between">
+              <span class="text-zinc-500">
+                Applied
+              </span>
+
+              <span class="text-white text-sm">
+                <%= new Date(application.createdAt).toLocaleDateString("en-IN") %>
+              </span>
+            </div>
+
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mt-8">
+
+            <a href="/admin/dashboard/application/<%= application._id %>" class="bg-purple-700 hover:bg-purple-800 text-center py-3 rounded-xl text-white">
+
+              View
+
+            </a>
+
+            <a href="/admin/dashboard/application/delete/<%= application._id %>" onclick="return confirm('Delete this application?')" class="bg-red-600 hover:bg-red-700 text-center py-3 rounded-xl text-white">
+
+              Delete
+
+            </a>
+
+          </div>
+
+        </div>
+
+        <% }) %>
+
+      </div>
+
+      <% } else { %>
+
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 text-center">
+
+        <h2 class="text-2xl font-bold text-white">
+          No Applications Found
+        </h2>
+
+      </div>
+
+      <% } %>
+
+      <!-- Pagination -->
+      <% if(totalPages > 1){ %>
+
+      <div class="flex justify-center mt-10 gap-3">
+
+        <% if(currentPage > 1){ %>
+
+        <a href="?page=<%= currentPage-1 %>&search=<%= search %>" class="bg-zinc-800 text-white px-4 py-2 rounded-lg">
+          Previous
+        </a>
+
+        <% } %>
+
+        <% for(let i = 1; i <= totalPages; i++){ %>
+
+        <a href="?page=<%= i %>&search=<%= search %>" class="<%= currentPage === i ? 'bg-purple-700 text-white' : 'bg-zinc-800 text-zinc-300' %> px-4 py-2 rounded-lg">
+
+          <%= i %>
+
+        </a>
+
+        <% } %>
+
+        <% if(currentPage < totalPages){ %>
+
+        <a href="?page=<%= currentPage+1 %>&search=<%= search %>" class="bg-zinc-800 text-white px-4 py-2 rounded-lg">
+          Next
+        </a>
+
+        <% } %>
+
+      </div>
+
+      <% } %>
+
+    </main>
+
+  </div>
+
+</body>
+
+</html>

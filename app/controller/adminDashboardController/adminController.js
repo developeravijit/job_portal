@@ -1,10 +1,14 @@
+const Activity = require("../../model/activity");
+const Application = require("../../model/application");
 const Company = require("../../model/company");
+const Job = require("../../model/job");
 const Otp = require("../../model/otp");
 const User = require("../../model/user");
 const {
   adminAccessToken,
   adminRefreshToken,
 } = require("../../utils/adminToken");
+const fileCleaner = require("../../utils/fileCleaner");
 const httpCodes = require("../../utils/httpCode");
 const {
   userEmail,
@@ -19,6 +23,8 @@ const {
 } = require("../../validation/userValidation");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const cloudinary = require("../../config/cloudinary");
 
 class adminController {
   // Admin Register Page
@@ -83,6 +89,47 @@ class adminController {
     } catch (error) {
       console.log(error.message);
 
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Settings Page
+  async settingsPage(req, res) {
+    try {
+      const admin = await User.findById(req.user.id);
+
+      if (!admin) {
+        return res.status(httpCodes.not_found).render("500", {
+          error: "Admin not found",
+        });
+      }
+
+      const activities = await Activity.find({
+        adminID: req.user.id,
+      })
+        .sort({
+          createdAt: -1,
+        })
+        .limit(5);
+
+      const systemInfo = {
+        appVersion: "1.0.0",
+        nodeVersion: process.version,
+        databaseStatus:
+          mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
+        environment: process.env.NODE_ENV || "development",
+        serverTime: new Date(),
+      };
+
+      return res.render("settings", {
+        admin,
+        activities,
+        systemInfo,
+        activePage: "settings",
+      });
+    } catch (error) {
       return res.status(httpCodes.server_error).render("500", {
         error: error.message,
       });
@@ -944,8 +991,8 @@ class adminController {
         {
           $lookup: {
             from: "jobs",
-            localField: "_id",
-            foreignField: "companyID",
+            localField: "employerID",
+            foreignField: "employerID",
             as: "jobs",
           },
         },
@@ -993,6 +1040,306 @@ class adminController {
         activePage: "companies",
       });
     } catch (error) {
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // All Jobs
+  async jobs(req, res) {
+    try {
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
+
+      const admin = await User.findById(req.user.id);
+
+      const match = {};
+
+      if (search) {
+        match.$or = [
+          {
+            title: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            location: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            skills: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
+      }
+
+      const totalJobs = await Job.countDocuments(match);
+
+      const jobs = await Job.aggregate([
+        {
+          $match: match,
+        },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "employerID",
+            foreignField: "employerID",
+            as: "company",
+          },
+        },
+        {
+          $unwind: {
+            path: "$company",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "employerID",
+            foreignField: "_id",
+            as: "employer",
+          },
+        },
+        {
+          $unwind: {
+            path: "$employer",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            title: 1,
+            description: 1,
+            salary: 1,
+            location: 1,
+            experience: 1,
+            status: 1,
+            createdAt: 1,
+            companyName: "$company.companyName",
+            employerName: "$employer.name",
+          },
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.ceil(totalJobs / limit);
+
+      return res.render("jobs", {
+        admin,
+        jobs,
+        totalJobs,
+        currentPage: page,
+        totalPages,
+        search,
+        activePage: "jobs",
+      });
+    } catch (error) {
+      console.log(error.message);
+
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // All Applications
+  async applications(req, res) {
+    try {
+      const limit = Number(req.query.limit) || 6;
+      const page = Number(req.query.page) || 1;
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.trim() || "";
+
+      const admin = await User.findById(req.user.id);
+
+      const pipeline = [
+        {
+          $lookup: {
+            from: "users",
+            localField: "candidateID",
+            foreignField: "_id",
+            as: "candidate",
+          },
+        },
+        {
+          $unwind: {
+            path: "$candidate",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "jobs",
+            localField: "jobID",
+            foreignField: "_id",
+            as: "job",
+          },
+        },
+        {
+          $unwind: {
+            path: "$job",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "job.employerID",
+            foreignField: "employerID",
+            as: "company",
+          },
+        },
+        {
+          $unwind: {
+            path: "$company",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ];
+
+      if (search) {
+        pipeline.push({
+          $match: {
+            $or: [
+              {
+                "candidate.name": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+              {
+                "candidate.email": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+              {
+                "job.title": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+              {
+                "company.companyName": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+            ],
+          },
+        });
+      }
+
+      const totalApplications =
+        (
+          await Application.aggregate([
+            ...pipeline,
+            {
+              $count: "count",
+            },
+          ])
+        )[0]?.count || 0;
+
+      const applications = await Application.aggregate([
+        ...pipeline,
+        {
+          $project: {
+            status: 1,
+            createdAt: 1,
+            candidateName: "$candidate.name",
+            candidateEmail: "$candidate.email",
+            jobTitle: "$job.title",
+            companyName: "$company.companyName",
+          },
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const totalPages = Math.ceil(totalApplications / limit);
+
+      return res.render("applications", {
+        admin,
+        applications,
+        totalApplications,
+        currentPage: page,
+        totalPages,
+        search,
+        activePage: "applications",
+      });
+    } catch (error) {
+      console.log(error.message);
+
+      return res.status(httpCodes.server_error).render("500", {
+        error: error.message,
+      });
+    }
+  }
+
+  // Update Profile
+  async updateProfile(req, res) {
+    try {
+      const admin = await User.findOne({
+        _id: req.user.id,
+        role: "admin",
+      });
+
+      if (!admin) {
+        fileCleaner(req.file);
+        return res.redirect("/admin/dashboard/settings");
+      }
+
+      admin.name = req.body.name || admin.name;
+      admin.phone = req.body.phone || admin.phone;
+
+      if (req.file) {
+        if (admin.public_id) {
+          await cloudinary.uploader.destroy(admin.public_id);
+        }
+
+        admin.avatar = req.file.path;
+        admin.public_id = req.file.filename;
+      }
+
+      await admin.save();
+
+      await Activity.create({
+        adminID: admin._id,
+        action: "Profile Updated",
+        description: "Updated profile information",
+      });
+
+      return res.redirect("/admin/dashboard/settings");
+    } catch (error) {
+      fileCleaner(req.file);
       return res.status(httpCodes.server_error).render("500", {
         error: error.message,
       });

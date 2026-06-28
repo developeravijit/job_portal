@@ -73,15 +73,21 @@
             </div>
 
             <div class="hidden xl:block">
+              <div class="w-44 h-44 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center overflow-hidden">
 
-              <div class="w-44 h-44 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
+                <% if (admin.avatar) { %>
+
+                <img src="<%= admin.avatar %>" alt="<%= admin.name %>" class="w-full h-full object-cover rounded-full">
+
+                <% } else { %>
 
                 <span class="text-7xl">
                   👨🏻‍💼
                 </span>
 
-              </div>
+                <% } %>
 
+              </div>
             </div>
 
           </div>

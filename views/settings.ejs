@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-zinc-950 overflow-hidden">
+
+  <div class="flex h-screen">
+
+    <%- include("layout/adminNavbar") %>
+
+    <div class="flex-1 overflow-y-auto p-8">
+
+      <div class="mb-10">
+
+        <h1 class="text-4xl font-bold text-white">
+          Settings
+        </h1>
+
+        <p class="text-zinc-400 mt-2">
+          Manage your account and system preferences.
+        </p>
+
+      </div>
+
+      <!-- PROFILE -->
+
+      <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 mb-8">
+
+        <h2 class="text-2xl font-bold text-white mb-6">
+          Admin Profile
+        </h2>
+
+        <form action="/admin/dashboard/update/profile" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+          <div class="flex items-center gap-8">
+
+            <img id="avatarPreview" src="<%= admin.avatar
+      ? admin.avatar
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(admin.name)}` %>" class="w-28 h-28 rounded-full object-cover border border-zinc-700">
+
+            <div>
+              <label class="text-zinc-300 block mb-2">
+                Change Avatar
+              </label>
+
+              <input type="file" id="avatar" name="avatar" accept="image/*" class="border rounded-xl p-3 text-zinc-400">
+            </div>
+
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+
+            <div>
+              <label class="text-zinc-300">
+                Name
+              </label>
+
+              <input type="text" name="name" value="<%= admin.name %>" class="w-full mt-2 bg-zinc-950 border border-zinc-700 rounded-xl p-4 text-white">
+            </div>
+
+            <div>
+              <label class="text-zinc-300">
+                Phone
+              </label>
+
+              <input type="number" name="phone" value="<%= admin.phone || '' %>" class="w-full mt-2 bg-zinc-950 border border-zinc-700 rounded-xl p-4 text-white">
+            </div>
+
+          </div>
+
+          <div>
+            <label class="text-zinc-300">
+              Email
+            </label>
+
+            <input type="email" value="<%= admin.email %>" readonly class="w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl p-4 text-zinc-400 cursor-not-allowed">
+          </div>
+
+          <button class="bg-purple-700 hover:bg-purple-800 text-white px-8 py-3 rounded-xl">
+
+            Update Profile
+
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- CHANGE PASSWORD -->
+
+      <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 mb-8">
+
+        <h2 class="text-2xl font-bold text-white mb-6">
+          Change Password
+        </h2>
+
+        <form action="/admin/dashboard/settings/password" method="POST" class="space-y-5">
+
+          <input type="password" name="currentPassword" placeholder="Current Password" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl p-4 text-white">
+
+          <input type="password" name="password" placeholder="New Password" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl p-4 text-white">
+
+          <input type="password" name="confirmPassword" placeholder="Confirm Password" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl p-4 text-white">
+
+          <button class="bg-purple-700 hover:bg-purple-800 text-white px-8 py-3 rounded-xl">
+
+            Change Password
+
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- ACCOUNT SETTINGS -->
+
+      <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 mb-8">
+
+        <h2 class="text-2xl font-bold text-white mb-6">
+          Account Settings
+        </h2>
+
+        <div class="grid md:grid-cols-3 gap-5">
+
+          <a href="/admin/dashboard/logout-all" class="bg-blue-700 hover:bg-blue-800 text-white text-center py-4 rounded-xl">
+
+            Logout All Devices
+
+          </a>
+
+          <a href="/admin/dashboard/deactivate" onclick="return confirm('Deactivate account?')" class="bg-yellow-700 hover:bg-yellow-800 text-white text-center py-4 rounded-xl">
+
+            Deactivate Account
+
+          </a>
+
+          <a href="/admin/dashboard/delete-account" onclick="return confirm('Delete account permanently?')" class="bg-red-700 hover:bg-red-800 text-white text-center py-4 rounded-xl">
+
+            Delete Account
+
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- SYSTEM INFO -->
+
+      <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 mb-8">
+
+        <h2 class="text-2xl font-bold text-white mb-6">
+          System Information
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+          <div class="bg-zinc-950 rounded-xl p-5">
+            <p class="text-zinc-500">Application Version</p>
+            <h3 class="text-white mt-2"><%= systemInfo.appVersion %></h3>
+          </div>
+
+          <div class="bg-zinc-950 rounded-xl p-5">
+            <p class="text-zinc-500">Node Version</p>
+            <h3 class="text-white mt-2"><%= systemInfo.nodeVersion %></h3>
+          </div>
+
+          <div class="bg-zinc-950 rounded-xl p-5">
+            <p class="text-zinc-500">MongoDB Status</p>
+            <h3 class="text-green-400 mt-2">
+              <%= systemInfo.databaseStatus %>
+            </h3>
+          </div>
+
+          <div class="bg-zinc-950 rounded-xl p-5">
+            <p class="text-zinc-500">Environment</p>
+            <h3 class="text-white mt-2">
+              <%= systemInfo.environment %>
+            </h3>
+          </div>
+
+          <div class="bg-zinc-950 rounded-xl p-5 md:col-span-2">
+            <p class="text-zinc-500">Server Time</p>
+            <h3 class="text-white mt-2">
+              <%= systemInfo.serverTime.toLocaleString() %>
+            </h3>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ACTIVITY LOGS -->
+
+      <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 mb-10">
+
+        <h2 class="text-2xl font-bold text-white mb-6">
+          Recent Activities
+        </h2>
+
+        <% if(activities.length){ %>
+
+        <div class="space-y-4">
+
+          <% activities.forEach(activity=>{ %>
+
+          <div class="bg-zinc-950 rounded-xl p-5 flex justify-between">
+
+            <div>
+
+              <h3 class="text-white font-semibold">
+                <%= activity.action %>
+              </h3>
+
+              <p class="text-zinc-400 text-sm mt-1">
+                <%= activity.description %>
+              </p>
+
+            </div>
+
+            <p class="text-zinc-500 text-sm">
+              <%= new Date(activity.createdAt).toLocaleString() %>
+            </p>
+
+          </div>
+
+          <% }) %>
+
+        </div>
+
+        <% } else { %>
+
+        <div class="text-center py-10 text-zinc-500">
+          No recent activities found.
+        </div>
+
+        <% } %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const avatarInput = document.getElementById("avatar");
+    const avatarPreview = document.getElementById("avatarPreview");
+
+    if (avatarInput && avatarPreview) {
+      avatarInput.addEventListener("change", function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          avatarPreview.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+
+</body>
+
+</html>

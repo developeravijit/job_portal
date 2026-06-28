@@ -332,6 +332,15 @@ class companyController {
       const { id } = req.params;
       const { status } = req.body;
 
+      const allowed = ["submitted", "reviewing", "selected", "rejected"];
+
+      if (!allowed.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status",
+        });
+      }
+
       await Application.findByIdAndUpdate(id, { status }, { new: true });
 
       const applicationData = await Application.aggregate([

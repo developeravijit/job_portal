@@ -2,6 +2,7 @@ const express = require("express");
 const authCheck = require("../middleware/authCheck");
 const permission = require("../middleware/permission");
 const authController = require("../controller/authController");
+const uploadImage = require("../middleware/imageUpload,js");
 
 const user = express.Router();
 
@@ -202,7 +203,7 @@ user.get("/admins", authCheck, permission("admin"), authController.showAdmin);
  * @swagger
  * /api/v1/auth/update-user/{id}:
  *   put:
- *     summary: Update User
+ *     summary: Update User Profile
  *     tags: [Candidate]
  *     security:
  *       - bearerAuth: []
@@ -210,16 +211,40 @@ user.get("/admins", authCheck, permission("admin"), authController.showAdmin);
  *       - in: path
  *         name: id
  *         required: true
+ *         description: User ID
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
- *         description: User updated
+ *         description: User updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
  */
 user.put(
   "/update-user/:id",
   authCheck,
   permission("user", "admin"),
+  uploadImage.single("avatar"),
   authController.updateUser,
 );
 
@@ -228,13 +253,42 @@ user.put(
  * @swagger
  * /api/v1/auth/update-employer/{id}:
  *   put:
- *     summary: Update Employer
+ *     summary: Update Employer Profile
  *     tags: [Employer]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Employer ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
- *         description: Employer updated
+ *         description: Employer updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Employer not found
+ *       500:
+ *         description: Internal server error
  */
 user.put(
   "/update-employer/:id",
@@ -248,13 +302,42 @@ user.put(
  * @swagger
  * /api/v1/auth/update-admin/{id}:
  *   put:
- *     summary: Update Admin
- *     tags: [Admin]
+ *     summary: Update Admin Profile
+ *     tags: [Candidate]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Admin ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
- *         description: Admin updated
+ *         description: Admin updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Admin not found
+ *       500:
+ *         description: Internal server error
  */
 user.put(
   "/update-admin/:id",

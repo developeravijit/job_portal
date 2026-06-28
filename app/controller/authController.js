@@ -19,6 +19,8 @@ const {
   resetPasswordToken,
 } = require("../utils/token");
 const jwt = require("jsonwebtoken");
+const cloudinary = require(".././config/cloudinary");
+const fileCleaner = require("../utils/fileCleaner");
 
 class authController {
   // Register
@@ -712,6 +714,7 @@ class authController {
       });
 
       if (!dataById) {
+        fileCleaner(req.file);
         return res.status(httpCodes.bad_request).json({
           success: false,
           message: "User not found",
@@ -719,6 +722,9 @@ class authController {
       }
 
       if (req.file) {
+        if (dataById.public_id) {
+          await cloudinary.uploader.destroy(dataById.public_id);
+        }
         userData.avatar = req.file.path;
         userData.public_id = req.file.filename;
       }
@@ -734,6 +740,7 @@ class authController {
         data: updateData,
       });
     } catch (error) {
+      fileCleaner(req.file);
       return res.status(httpCodes.server_error).json({
         success: false,
         message: error.message,
@@ -755,6 +762,7 @@ class authController {
       });
 
       if (!dataById) {
+        fileCleaner(req.file);
         return res.status(httpCodes.bad_request).json({
           success: false,
           message: "employer not found",
@@ -762,6 +770,9 @@ class authController {
       }
 
       if (req.file) {
+        if (dataById.public_id) {
+          await cloudinary.uploader.destroy(dataById.public_id);
+        }
         userData.avatar = req.file.path;
         userData.public_id = req.file.filename;
       }
@@ -777,6 +788,7 @@ class authController {
         data: updateemployer,
       });
     } catch (error) {
+      fileCleaner(req.file);
       return res.status(httpCodes.server_error).json({
         success: false,
         message: error.message,
@@ -798,10 +810,19 @@ class authController {
       });
 
       if (!dataById) {
+        fileCleaner(req.file);
         return res.status(httpCodes.bad_request).json({
           success: false,
           message: "Admin not found",
         });
+      }
+
+      if (req.file) {
+        if (dataById.public_id) {
+          await cloudinary.uploader.destroy(dataById.public_id);
+        }
+        userData.avatar = req.file.path;
+        userData.public_id = req.file.filename;
       }
 
       const updateAdmin = await User.findByIdAndUpdate(id, userData, {

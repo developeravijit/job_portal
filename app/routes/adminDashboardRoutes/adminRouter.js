@@ -1,6 +1,7 @@
 const express = require("express");
 const adminController = require("../../controller/adminDashboardController/adminController");
 const adminAuthCheck = require("../../middleware/adminMiddleware/adminAuthCheck");
+const uploadImage = require("../../middleware/imageUpload,js");
 
 const admin = express.Router();
 
@@ -37,5 +38,20 @@ admin.get("/employers", adminAuthCheck, adminController.employers);
 
 // All Companies
 admin.get("/companies", adminAuthCheck, adminController.companies);
+
+// All Jobs
+admin.get("/jobs", adminAuthCheck, adminController.jobs);
+
+// All Applications
+admin.get("/applications", adminAuthCheck, adminController.applications);
+
+// Admin Settings
+admin.get("/settings", adminAuthCheck, adminController.settingsPage);
+admin.post(
+  "/update/profile",
+  adminAuthCheck,
+  uploadImage.single("avatar"),
+  adminController.updateProfile,
+);
 
 module.exports = admin;

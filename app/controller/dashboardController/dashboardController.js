@@ -333,7 +333,7 @@ class dashboardController {
       }
 
       if (data.isVerified) {
-        return res.redirect("login", {
+        return res.redirect("/job-portal/login", {
           error: "User is already verified kindly login",
           success: null,
         });
